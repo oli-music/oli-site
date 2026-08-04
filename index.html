@@ -17,36 +17,73 @@
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   html,body{height:100%;}
-  body{
-    background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif;
-    display:flex; flex-direction:column; overflow:hidden;
-  }
+  body{ background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif; display:flex; flex-direction:column; overflow:hidden; }
   ::-webkit-scrollbar{width:8px; height:8px;} ::-webkit-scrollbar-thumb{background:var(--surface-3); border-radius:4px;}
   .mono{font-family:'IBM Plex Mono',monospace;}
   button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit;}
   button:disabled{opacity:.4; cursor:not-allowed;}
   a{color:inherit; text-decoration:none;}
+  input, select{font-family:inherit;}
   .mobile-only{display:none;}
   .desktop-only{display:flex;}
+  .hidden{display:none !important;}
 
-  /* ===================== DESKTOP LAYOUT (oli-desktop style) ===================== */
-  .app{flex:1; display:flex; min-height:0;}
-  .sidebar{
-    width:220px; flex-shrink:0; background:var(--surface); border-right:1px solid var(--line);
-    display:flex; flex-direction:column; padding:20px 14px;
+  /* ===================== SHARED COMPONENTS ===================== */
+  .empty-state{ text-align:center; padding:40px 20px; color:var(--muted); font-size:14px; }
+  .section-title{font-family:'Fraunces',serif; font-weight:500; font-size:22px; margin-bottom:4px;}
+  .section-sub{color:var(--muted); font-size:13.5px; margin-bottom:20px;}
+
+  .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:10px 18px; border-radius:100px; font-size:13.5px; font-weight:500; background:var(--amber); color:#1a1508; transition:transform .15s, box-shadow .15s; }
+  .btn:hover{transform:translateY(-1px); box-shadow:0 6px 20px rgba(242,169,59,0.25);}
+  .btn-ghost{background:transparent; color:var(--ink); border:1px solid var(--line);}
+  .btn-ghost:hover{background:var(--surface); box-shadow:none; transform:none;}
+  .btn-danger{background:#3a1f24; color:#ff8a8a; border:1px solid #5c2b30;}
+
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:14px;}
+
+  .toggle{ position:relative; width:42px; height:24px; background:var(--surface-3); border-radius:100px; flex-shrink:0; transition:background .2s; }
+  .toggle::after{ content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:var(--ink); transition:transform .2s; }
+  .toggle.on{background:var(--amber);}
+  .toggle.on::after{transform:translateX(18px); background:#1a1508;}
+
+  .form-row{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 0; border-bottom:1px solid var(--line);}
+  .form-row:last-child{border-bottom:none;}
+  .form-row .label{font-size:14px; font-weight:500;}
+  .form-row .desc{font-size:12.5px; color:var(--muted); margin-top:2px;}
+  .form-row input[type="text"], .form-row select{
+    background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:9px 12px;
+    color:var(--ink); font-size:13.5px; outline:none;
   }
+  .form-row input[type="text"]:focus, .form-row select:focus{border-color:var(--amber);}
+
+  .swatches{display:flex; gap:10px;}
+  .swatch{width:26px; height:26px; border-radius:50%; cursor:pointer; border:2px solid transparent; transition:border .15s;}
+  .swatch.active{border-color:var(--ink);}
+
+  .view-header-mobile{display:none;}
+
+  svg{display:block;}
+  .gradient-1{background:linear-gradient(135deg,#F2A93B,#3FBFAE);}
+  .gradient-2{background:linear-gradient(135deg,#7A5CFA,#F2A93B);}
+  .gradient-3{background:linear-gradient(135deg,#3FBFAE,#7A5CFA);}
+  .gradient-4{background:linear-gradient(135deg,#E8637B,#F2A93B);}
+  .gradient-5{background:linear-gradient(135deg,#3FBFAE,#E8637B);}
+  .gradient-6{background:linear-gradient(135deg,#F2A93B,#7A5CFA);}
+
+  /* ===================== DESKTOP LAYOUT ===================== */
+  .app{flex:1; display:flex; min-height:0;}
+  .sidebar{ width:230px; flex-shrink:0; background:var(--surface); border-right:1px solid var(--line); display:flex; flex-direction:column; padding:20px 14px; overflow-y:auto; }
   .logo-link{padding:0 10px 22px; display:block;}
   .logo{font-family:'Fraunces',serif; font-size:22px; font-weight:600;}
   .logo span{color:var(--amber);}
-  .nav-item{
-    display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:10px;
-    font-size:14px; color:var(--muted); font-weight:500; transition:all .15s; cursor:pointer;
-  }
+  .nav-item{ display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:10px; font-size:14px; color:var(--muted); font-weight:500; transition:all .15s; cursor:pointer; }
   .nav-item:hover{background:var(--surface-2); color:var(--ink);}
   .nav-item.active{background:var(--surface-2); color:var(--amber);}
   .nav-icon{width:18px; height:18px; flex-shrink:0;}
-  .nav-section{margin-top:24px; padding:0 12px 8px; font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); opacity:.7;}
-  .playlist-item{padding:8px 12px; font-size:13.5px; color:var(--muted); border-radius:8px; cursor:pointer;}
+  .nav-section{margin-top:22px; padding:0 12px 8px; font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); opacity:.7; display:flex; justify-content:space-between; align-items:center;}
+  .nav-section button{color:var(--muted); font-size:15px;}
+  .nav-section button:hover{color:var(--amber);}
+  .playlist-item{padding:8px 12px; font-size:13.5px; color:var(--muted); border-radius:8px; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .playlist-item:hover{background:var(--surface-2); color:var(--ink);}
   .sidebar-foot{margin-top:auto; padding:12px 10px 0;}
   .back-link{font-size:12.5px; color:var(--muted); display:flex; align-items:center; gap:6px;}
@@ -54,40 +91,25 @@
 
   .main{flex:1; display:flex; flex-direction:column; min-width:0;}
   .topbar{ display:flex; align-items:center; gap:16px; padding:16px 32px; border-bottom:1px solid var(--line); }
-  .search{
-    flex:1; max-width:480px; display:flex; align-items:center; gap:10px;
-    background:var(--surface); border:1px solid var(--line); border-radius:100px; padding:10px 18px;
-  }
+  .search{ flex:1; max-width:480px; display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--line); border-radius:100px; padding:10px 18px; }
   .search input{ background:none; border:none; outline:none; color:var(--ink); font-size:14px; width:100%; }
   .search input::placeholder{color:var(--muted);}
   .search svg{flex-shrink:0; color:var(--muted);}
-  .icon-btn{color:var(--muted); padding:8px; border-radius:8px;}
-  .icon-btn:hover{color:var(--ink); background:var(--surface);}
 
   .content{flex:1; overflow-y:auto; padding:26px 32px 40px;}
-  .content h2{font-family:'Fraunces',serif; font-weight:500; font-size:22px; margin-bottom:4px;}
-  .content .subtext{color:var(--muted); font-size:13.5px; margin-bottom:20px;}
-  .empty-state{ text-align:center; padding:40px 20px; color:var(--muted); font-size:14px; }
+  .view-panel{display:none;}
+  .view-panel.active{display:block;}
 
-  /* mood chips */
   .chip-row{display:flex; gap:10px; overflow-x:auto; padding-bottom:8px; margin-bottom:28px;}
   .chip-row::-webkit-scrollbar{display:none;}
-  .chip{
-    flex-shrink:0; padding:9px 18px; border-radius:100px; background:var(--surface); border:1px solid var(--line);
-    font-size:13.5px; color:var(--ink); cursor:pointer; white-space:nowrap; transition:all .15s;
-  }
+  .chip{ flex-shrink:0; padding:9px 18px; border-radius:100px; background:var(--surface); border:1px solid var(--line); font-size:13.5px; color:var(--ink); cursor:pointer; white-space:nowrap; transition:all .15s; }
   .chip:hover, .chip.active{background:var(--amber); color:#1a1508; border-color:var(--amber);}
 
-  /* genre grid */
   .genre-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:36px; }
-  .genre-card{
-    background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px;
-    cursor:pointer; transition:all .15s; font-family:'Fraunces',serif; font-weight:500; font-size:16px;
-  }
+  .genre-card{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px; cursor:pointer; transition:all .15s; font-family:'Fraunces',serif; font-weight:500; font-size:16px; }
   .genre-card:hover{background:var(--surface-2); transform:translateY(-2px);}
   @media (max-width:1000px){ .genre-grid{grid-template-columns:repeat(2,1fr);} }
 
-  /* trending scroll */
   .trend-scroll{display:flex; gap:16px; overflow-x:auto; padding-bottom:12px; margin-bottom:36px;}
   .trend-scroll::-webkit-scrollbar{display:none;}
   .trend-card{width:150px; flex-shrink:0; cursor:pointer;}
@@ -96,16 +118,10 @@
   .trend-card:hover .playbtn{opacity:1;}
 
   .track-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:18px; margin-bottom:36px; }
-  .track-card{
-    background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px;
-    cursor:pointer; transition:transform .15s, background .15s; position:relative;
-  }
+  .track-card{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px; cursor:pointer; transition:transform .15s, background .15s; position:relative; }
   .track-card:hover{transform:translateY(-3px); background:var(--surface-2);}
   .track-card.playing{outline:2px solid var(--amber);}
-  .art{
-    width:100%; aspect-ratio:1; border-radius:10px; margin-bottom:12px;
-    display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;
-  }
+  .art{ width:100%; aspect-ratio:1; border-radius:10px; margin-bottom:12px; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
   .art .playbtn{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(18,16,27,0.35); opacity:0; transition:opacity .15s; }
   .track-card:hover .playbtn{opacity:1;}
   .art .eq-mini{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:3px; background:rgba(18,16,27,0.45); }
@@ -115,6 +131,9 @@
   .playbtn-circle{ width:44px; height:44px; border-radius:50%; background:var(--amber); color:#1a1508; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 20px rgba(0,0,0,.4); }
   .t-title{font-size:14px; font-weight:600; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .t-artist{font-size:12.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .card-fav-btn{position:absolute; top:20px; right:20px; z-index:2; color:#fff; opacity:0; transition:opacity .15s; filter:drop-shadow(0 1px 3px rgba(0,0,0,.6));}
+  .track-card:hover .card-fav-btn, .card-fav-btn.liked{opacity:1;}
+  .card-fav-btn.liked{color:var(--amber);}
 
   .row-list{display:flex; flex-direction:column; gap:2px;}
   .row-item{ display:flex; align-items:center; gap:14px; padding:9px 12px; border-radius:10px; cursor:pointer; }
@@ -124,29 +143,22 @@
   .row-item .art-sm{width:40px; height:40px; border-radius:6px; flex-shrink:0;}
   .row-item .info{flex:1; min-width:0;}
   .row-item .dur{color:var(--muted); font-size:12.5px; flex-shrink:0;}
+  .row-item .row-actions{display:flex; gap:4px; flex-shrink:0;}
+  .row-item .row-actions button{color:var(--muted); padding:6px;}
+  .row-item .row-actions button:hover{color:var(--ink);}
+  .row-item .row-actions button.liked{color:var(--amber);}
 
-  .lyrics-panel{
-    width:340px; flex-shrink:0; background:var(--surface); border-left:1px solid var(--line);
-    display:none; flex-direction:column; padding:24px 22px; overflow-y:auto;
-  }
+  .lyrics-panel{ width:340px; flex-shrink:0; background:var(--surface); border-left:1px solid var(--line); display:none; flex-direction:column; padding:24px 22px; overflow-y:auto; }
   .lyrics-panel.open{display:flex;}
   .lyrics-panel h3{font-family:'Fraunces',serif; font-weight:500; font-size:17px; margin-bottom:18px; display:flex; justify-content:space-between; align-items:center;}
   .lyric-line{ font-size:15.5px; color:var(--muted); padding:7px 0; line-height:1.5; transition:color .25s, transform .25s; }
   .lyric-line.active{color:var(--ink); font-weight:600; transform:scale(1.03); transform-origin:left;}
   .lyrics-empty{color:var(--muted); font-size:13.5px; text-align:center; padding:30px 10px;}
 
-  /* desktop player bar */
-  .player-bar{
-    height:var(--player-h); flex-shrink:0; background:var(--surface); border-top:1px solid var(--line);
-    display:flex; align-items:center; padding:0 20px; gap:20px; position:relative;
-  }
+  .player-bar{ height:var(--player-h); flex-shrink:0; background:var(--surface); border-top:1px solid var(--line); display:flex; align-items:center; padding:0 20px; gap:20px; position:relative; }
   .now-playing{display:flex; align-items:center; gap:12px; width:260px; min-width:0;}
   .np-art{width:56px; height:56px; border-radius:8px; flex-shrink:0; position:relative; background-size:cover; background-position:center;}
-  .np-art.loading::after{
-    content:''; position:absolute; inset:0; border-radius:8px;
-    border:2px solid rgba(255,255,255,0.25); border-top-color:var(--amber);
-    animation:spin .8s linear infinite;
-  }
+  .np-art.loading::after{ content:''; position:absolute; inset:0; border-radius:8px; border:2px solid rgba(255,255,255,0.25); border-top-color:var(--amber); animation:spin .8s linear infinite; }
   @keyframes spin{to{transform:rotate(360deg);}}
   .np-info{min-width:0;}
   .np-title{font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
@@ -159,10 +171,7 @@
   .ctrl-btn{color:var(--ink); opacity:.85; transition:opacity .15s, transform .15s;}
   .ctrl-btn:hover{opacity:1; transform:scale(1.08);}
   .ctrl-btn.active-toggle{color:var(--amber); opacity:1;}
-  .play-main{
-    width:38px; height:38px; border-radius:50%; background:var(--amber); color:#1a1508;
-    display:flex; align-items:center; justify-content:center;
-  }
+  .play-main{ width:38px; height:38px; border-radius:50%; background:var(--amber); color:#1a1508; display:flex; align-items:center; justify-content:center; }
   .play-main:disabled{background:var(--surface-3); color:var(--muted);}
   .seek-row{display:flex; align-items:center; gap:10px; width:100%;}
   .time{font-size:11px; color:var(--muted); width:36px; font-family:'IBM Plex Mono',monospace; flex-shrink:0;}
@@ -179,34 +188,59 @@
   .vol{ flex:1; -webkit-appearance:none; height:4px; border-radius:2px; background:var(--surface-3); outline:none; cursor:pointer; }
   .vol::-webkit-slider-thumb{-webkit-appearance:none; width:10px; height:10px; border-radius:50%; background:var(--ink);}
 
-  .toast{
-    position:fixed; bottom:calc(var(--player-h) + 20px); left:50%; transform:translateX(-50%) translateY(20px);
-    background:var(--surface-3); border:1px solid var(--line); padding:12px 20px; border-radius:10px;
-    font-size:13px; opacity:0; pointer-events:none; transition:all .25s ease; z-index:400; max-width:90vw; text-align:center;
-  }
+  .toast{ position:fixed; bottom:calc(var(--player-h) + 20px); left:50%; transform:translateX(-50%) translateY(20px); background:var(--surface-3); border:1px solid var(--line); padding:12px 20px; border-radius:10px; font-size:13px; opacity:0; pointer-events:none; transition:all .25s ease; z-index:400; max-width:90vw; text-align:center; }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 
-  svg{display:block;}
-  .gradient-1{background:linear-gradient(135deg,#F2A93B,#3FBFAE);}
-  .gradient-2{background:linear-gradient(135deg,#7A5CFA,#F2A93B);}
-  .gradient-3{background:linear-gradient(135deg,#3FBFAE,#7A5CFA);}
-  .gradient-4{background:linear-gradient(135deg,#E8637B,#F2A93B);}
-  .gradient-5{background:linear-gradient(135deg,#3FBFAE,#E8637B);}
-  .gradient-6{background:linear-gradient(135deg,#F2A93B,#7A5CFA);}
+  .tab-row{display:flex; gap:8px; margin-bottom:24px; border-bottom:1px solid var(--line);}
+  .tab-btn{padding:10px 4px; margin-right:20px; color:var(--muted); font-size:14px; font-weight:500; border-bottom:2px solid transparent; position:relative; top:1px; cursor:pointer;}
+  .tab-btn.active{color:var(--ink); border-bottom-color:var(--amber);}
+  .playlist-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:18px;}
+  .playlist-card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px; cursor:pointer; transition:all .15s;}
+  .playlist-card:hover{background:var(--surface-2); transform:translateY(-2px);}
+  .playlist-cover{width:100%; aspect-ratio:1; border-radius:10px; margin-bottom:12px; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; overflow:hidden; background:var(--surface-3);}
+  .playlist-cover div{background-size:cover; background-position:center;}
+  .playlist-name{font-size:14px; font-weight:600; margin-bottom:2px;}
+  .playlist-count{font-size:12px; color:var(--muted);}
+  .new-playlist-card{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; aspect-ratio:1; border:2px dashed var(--line); border-radius:14px; cursor:pointer; color:var(--muted); }
+  .new-playlist-card:hover{border-color:var(--amber); color:var(--amber);}
 
-  /* ===================== MOBILE LAYOUT (oli-android style) ===================== */
+  .modal-backdrop{position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:500; display:none; align-items:center; justify-content:center; padding:20px;}
+  .modal-backdrop.open{display:flex;}
+  .modal{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:24px; width:100%; max-width:380px;}
+  .modal h3{font-family:'Fraunces',serif; font-size:18px; margin-bottom:16px;}
+  .modal input[type="text"]{ width:100%; background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:10px 14px; color:var(--ink); font-size:14px; outline:none; margin-bottom:16px; }
+  .modal input:focus{border-color:var(--amber);}
+  .modal-playlist-list{max-height:220px; overflow-y:auto; margin-bottom:16px;}
+  .modal-playlist-item{display:flex; align-items:center; gap:10px; padding:10px 4px; cursor:pointer; font-size:14px;}
+  .modal-playlist-item:hover{color:var(--amber);}
+  .modal-actions{display:flex; gap:10px; justify-content:flex-end;}
+
+  .eq-panel{max-width:640px;}
+  .eq-bands{display:flex; justify-content:space-between; align-items:flex-end; gap:14px; height:220px; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:24px; margin-bottom:20px;}
+  .eq-band{display:flex; flex-direction:column; align-items:center; gap:10px; flex:1; height:100%;}
+  .eq-band input[type="range"]{ -webkit-appearance:slider-vertical; width:6px; flex:1; background:var(--surface-3); border-radius:3px; accent-color:var(--amber); cursor:pointer; }
+  .eq-band .freq-label{font-size:11px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
+  .eq-band .gain-label{font-size:11px; color:var(--ink); font-family:'IBM Plex Mono',monospace;}
+  .eq-presets{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px;}
+
+  .lt-status{display:flex; align-items:center; gap:10px; padding:16px 18px; border-radius:12px; margin-bottom:20px; font-size:14px;}
+  .lt-status.disconnected{background:var(--surface); border:1px solid var(--line);}
+  .lt-status.connecting{background:#2a2410; border:1px solid #4a3f1a; color:#f2c94c;}
+  .lt-status.connected{background:#12271f; border:1px solid #1e4a38; color:#3fbfae;}
+  .lt-status.error{background:#2a1414; border:1px solid #4a1e1e; color:#ff8a8a;}
+  .lt-dot{width:9px; height:9px; border-radius:50%; background:currentColor; flex-shrink:0;}
+  .lt-note{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 18px; font-size:13px; color:var(--muted); line-height:1.6; margin-top:24px;}
+
   @media (max-width:760px){
     .desktop-only{display:none !important;}
     .mobile-only{display:flex;}
     body{overflow:auto;}
 
-    .mobile-topbar{
-      display:flex; align-items:center; justify-content:space-between; padding:16px 18px;
-      position:sticky; top:0; z-index:50; background:var(--bg);
-    }
+    .mobile-topbar{ display:flex; align-items:center; justify-content:space-between; padding:16px 18px; position:sticky; top:0; z-index:50; background:var(--bg); }
     .mobile-topbar .logo{font-size:22px;}
     .mobile-icons{display:flex; gap:6px;}
-    .mobile-icons .icon-btn{color:var(--muted);}
+    .icon-btn{color:var(--muted); padding:8px; border-radius:8px;}
+    .icon-btn:hover{color:var(--ink); background:var(--surface);}
 
     .mobile-search{ margin:0 18px 18px; display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--line); border-radius:100px; padding:11px 18px; }
     .mobile-search input{ background:none; border:none; outline:none; color:var(--ink); font-size:14px; width:100%; }
@@ -223,24 +257,20 @@
     .trend-card{width:130px;}
     .trend-art{width:130px; height:130px;}
     .track-grid{grid-template-columns:repeat(2,1fr); gap:12px;}
+    .playlist-grid{grid-template-columns:repeat(2,1fr); gap:12px;}
 
-    /* bottom nav */
-    .bottom-nav{
-      position:fixed; left:0; right:0; bottom:0; z-index:60; background:var(--surface); border-top:1px solid var(--line);
-      display:flex; align-items:center; justify-content:space-around; padding:10px 0 max(10px, env(safe-area-inset-bottom));
-    }
-    .bn-item{ display:flex; flex-direction:column; align-items:center; gap:3px; color:var(--muted); font-size:10.5px; padding:4px 12px; }
+    .view-header-mobile{ display:flex; align-items:center; gap:14px; padding:16px 18px 6px; position:sticky; top:0; background:var(--bg); z-index:50; }
+    .view-header-mobile button{color:var(--ink); padding:4px;}
+    .view-header-mobile .title{font-family:'Fraunces',serif; font-size:19px; font-weight:500;}
+
+    .eq-bands{padding:18px 14px; gap:8px;}
+
+    .bottom-nav{ position:fixed; left:0; right:0; bottom:0; z-index:60; background:var(--surface); border-top:1px solid var(--line); display:flex; align-items:center; justify-content:space-around; padding:10px 0 max(10px, env(safe-area-inset-bottom)); }
+    .bn-item{ display:flex; flex-direction:column; align-items:center; gap:3px; color:var(--muted); font-size:10.5px; padding:4px 12px; cursor:pointer; }
     .bn-item.active{color:var(--amber);}
     .bn-item svg{width:22px; height:22px;}
 
-    /* mini player pill */
-    .mini-player{
-      position:fixed; left:12px; right:12px; z-index:55;
-      bottom:calc(64px + env(safe-area-inset-bottom));
-      background:var(--surface-2); border:1px solid var(--line); border-radius:16px;
-      display:flex; align-items:center; gap:12px; padding:8px 10px 8px 8px;
-      box-shadow:0 12px 30px -10px rgba(0,0,0,.5);
-    }
+    .mini-player{ position:fixed; left:12px; right:12px; z-index:55; bottom:calc(64px + env(safe-area-inset-bottom)); background:var(--surface-2); border:1px solid var(--line); border-radius:16px; display:flex; align-items:center; gap:12px; padding:8px 10px 8px 8px; box-shadow:0 12px 30px -10px rgba(0,0,0,.5); }
     .mini-art{width:42px; height:42px; border-radius:9px; flex-shrink:0; background-size:cover; background-position:center;}
     .mini-info{flex:1; min-width:0;}
     .mini-title{font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
@@ -251,12 +281,7 @@
     .mini-seek-fill{height:100%; background:var(--amber); width:0%;}
   }
 
-  /* ===================== NOW PLAYING SHEET (mobile full-screen) ===================== */
-  .np-sheet{
-    position:fixed; inset:0; z-index:300; background:var(--bg);
-    display:flex; flex-direction:column; padding:20px 24px calc(30px + env(safe-area-inset-bottom));
-    transform:translateY(100%); transition:transform .3s cubic-bezier(.32,.72,0,1);
-  }
+  .np-sheet{ position:fixed; inset:0; z-index:300; background:var(--bg); display:flex; flex-direction:column; padding:20px 24px calc(30px + env(safe-area-inset-bottom)); transform:translateY(100%); transition:transform .3s cubic-bezier(.32,.72,0,1); }
   .np-sheet.open{transform:translateY(0);}
   .sheet-topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:30px;}
   .sheet-topbar button{color:var(--ink); padding:6px;}
@@ -274,11 +299,7 @@
   .sheet-seek::-webkit-slider-thumb{-webkit-appearance:none; width:14px; height:14px; border-radius:50%; background:var(--amber);}
   .sheet-times{max-width:340px; margin:0 auto 24px; width:100%; display:flex; justify-content:space-between; font-size:11.5px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
   .sheet-controls{display:flex; align-items:center; justify-content:center; gap:30px; margin-bottom:34px;}
-  .sheet-play{
-    width:66px; height:66px; border-radius:50%; background:var(--ink); color:var(--bg);
-    display:flex; align-items:center; justify-content:center;
-    clip-path: polygon(50% 0%, 61% 4%, 71% 11%, 89% 11%, 96% 21%, 96% 33%, 100% 50%, 96% 67%, 96% 79%, 89% 89%, 71% 89%, 61% 96%, 50% 100%, 39% 96%, 29% 89%, 11% 89%, 4% 79%, 4% 67%, 0% 50%, 4% 33%, 4% 21%, 11% 11%, 29% 11%, 39% 4%);
-  }
+  .sheet-play{ width:66px; height:66px; border-radius:50%; background:var(--ink); color:var(--bg); display:flex; align-items:center; justify-content:center; clip-path: polygon(50% 0%, 61% 4%, 71% 11%, 89% 11%, 96% 21%, 96% 33%, 100% 50%, 96% 67%, 96% 79%, 89% 89%, 71% 89%, 61% 96%, 50% 100%, 39% 96%, 29% 89%, 11% 89%, 4% 79%, 4% 67%, 0% 50%, 4% 33%, 4% 21%, 11% 11%, 29% 11%, 39% 4%); }
   .sheet-controls .ctrl-btn{color:var(--ink);}
   .sheet-bottom-icons{display:flex; align-items:center; justify-content:space-between; max-width:340px; margin:0 auto; width:100%;}
   .sheet-bottom-icons button{color:var(--muted); padding:8px;}
@@ -292,26 +313,35 @@
 </head>
 <body>
 
-<!-- ============ DESKTOP APP LAYOUT ============ -->
 <div class="app desktop-only" id="desktopApp">
   <div class="sidebar">
     <a href="info.html" class="logo-link"><div class="logo">oli<span>.</span></div></a>
-    <div class="nav-item active">
+    <div class="nav-item active" data-view="home">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>
       Home
     </div>
-    <div class="nav-item" id="searchNavItem">
+    <div class="nav-item" id="searchNavItem" data-view="home">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       Search
     </div>
-    <div class="nav-item">
+    <div class="nav-item" data-view="library">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13M9 18a3 3 0 11-6 0 3 3 0 016 0zM21 16a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
       Library
     </div>
-    <div class="nav-section">Playlists</div>
-    <div class="playlist-item">Late Night Focus</div>
-    <div class="playlist-item">Roadtrip Rotation</div>
-    <div class="playlist-item">Liked Songs</div>
+    <div class="nav-item" data-view="equalizer">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21V14M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+      Equalizer
+    </div>
+    <div class="nav-item" data-view="listen-together">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      Listen Together
+    </div>
+    <div class="nav-item" data-view="settings">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      Settings
+    </div>
+    <div class="nav-section"><span>Playlists</span><button id="newPlaylistBtnSidebar" title="New playlist">+</button></div>
+    <div id="sidebarPlaylists"></div>
     <div class="sidebar-foot">
       <a href="info.html" class="back-link">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -329,22 +359,45 @@
     </div>
 
     <div class="content">
-      <div class="chip-row" id="chipRowDesktop"></div>
+      <div class="view-panel active" id="panelHome-d">
+        <div class="chip-row" id="chipRowDesktop"></div>
+        <h2 class="section-title">Mood and Genres</h2>
+        <div class="genre-grid" id="genreGridDesktop"></div>
+        <h2 class="section-title">Trending community playlists</h2>
+        <div class="trend-scroll" id="trendScrollDesktop"></div>
+        <h2 class="section-title" id="gridHeading">Quick picks</h2>
+        <div class="section-sub" id="gridSubtext">Demo playback — connect oli-web-api in Settings to search and stream real tracks.</div>
+        <div class="track-grid" id="grid"></div>
+        <div class="empty-state" id="noResults" style="display:none;">No tracks match your search.</div>
+        <h2 class="section-title">Up next</h2>
+        <div class="section-sub">Queue</div>
+        <div class="row-list" id="queueList"></div>
+      </div>
 
-      <h2>Mood and Genres</h2>
-      <div class="genre-grid" id="genreGridDesktop"></div>
+      <div class="view-panel" id="panelLibrary-d">
+        <h2 class="section-title">Library</h2>
+        <div class="section-sub">Playlists, favorites, and listening history — stored locally in this browser.</div>
+        <div class="tab-row" id="libTabsDesktop"></div>
+        <div id="libraryContentDesktop"></div>
+      </div>
 
-      <h2>Trending community playlists</h2>
-      <div class="trend-scroll" id="trendScrollDesktop"></div>
+      <div class="view-panel" id="panelEq-d">
+        <h2 class="section-title">Equalizer</h2>
+        <div class="section-sub">Real-time audio shaping via Web Audio API — applies live to whatever's playing.</div>
+        <div class="eq-panel" id="eqPanelDesktop"></div>
+      </div>
 
-      <h2 id="gridHeading">Quick picks</h2>
-      <div class="subtext" id="gridSubtext">Demo playback — set API_BASE in the script to search and stream real tracks.</div>
-      <div class="track-grid" id="grid"></div>
-      <div class="empty-state" id="noResults" style="display:none;">No tracks match your search.</div>
+      <div class="view-panel" id="panelListen-d">
+        <h2 class="section-title">Listen Together</h2>
+        <div class="section-sub">Sync playback in real time with people on the Android app.</div>
+        <div id="listenPanelDesktop"></div>
+      </div>
 
-      <h2>Up next</h2>
-      <div class="subtext">Queue</div>
-      <div class="row-list" id="queueList"></div>
+      <div class="view-panel" id="panelSettings-d">
+        <h2 class="section-title">Settings</h2>
+        <div class="section-sub">Configuration is stored locally in this browser.</div>
+        <div id="settingsPanelDesktop"></div>
+      </div>
     </div>
   </div>
 
@@ -407,34 +460,55 @@
   </div>
 </div>
 
-<!-- ============ MOBILE APP LAYOUT (oli-android style) ============ -->
 <div class="mobile-only" id="mobileApp" style="flex-direction:column; flex:1; min-height:0;">
-  <div class="mobile-topbar">
+  <div class="mobile-topbar" id="mobileTopbarHome">
     <div class="logo">oli<span style="color:var(--amber);">.</span></div>
     <div class="mobile-icons">
-      <button class="icon-btn" aria-label="History"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/></svg></button>
-      <button class="icon-btn" aria-label="Charts"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18M7 15l4-6 4 3 5-7"/></svg></button>
-      <a href="info.html" class="icon-btn" aria-label="About"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></a>
+      <button class="icon-btn" data-view="library" aria-label="Library"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/></svg></button>
+      <button class="icon-btn" data-view="listen-together" aria-label="Listen Together"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8z"/></svg></button>
+      <button class="icon-btn" data-view="settings" aria-label="Settings"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
     </div>
   </div>
 
-  <div class="mobile-search">
+  <div class="mobile-search" id="mobileSearchBar">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
     <input id="searchInputMobile" placeholder="Search songs, artists, playlists…" aria-label="Search" />
   </div>
 
   <div class="mobile-content" id="mobileContent">
-    <div class="chip-row" id="chipRowMobile"></div>
+    <div class="view-panel active" id="panelHome-m">
+      <div class="chip-row" id="chipRowMobile"></div>
+      <h2>Mood and Genres <span class="arrow">&rarr;</span></h2>
+      <div class="genre-grid" id="genreGridMobile"></div>
+      <h2>Trending community playlists</h2>
+      <div class="trend-scroll" id="trendScrollMobile"></div>
+      <h2 id="gridHeadingMobile">Quick picks</h2>
+      <div class="track-grid" id="gridMobile"></div>
+      <div class="empty-state" id="noResultsMobile" style="display:none;">No tracks match your search.</div>
+    </div>
 
-    <h2>Mood and Genres <span class="arrow">&rarr;</span></h2>
-    <div class="genre-grid" id="genreGridMobile"></div>
+    <div class="view-panel" id="panelLibrary-m">
+      <div class="view-header-mobile"><button data-back><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><div class="title">Library</div></div>
+      <div style="padding:0 0 12px;">
+        <div class="tab-row" id="libTabsMobile"></div>
+        <div id="libraryContentMobile"></div>
+      </div>
+    </div>
 
-    <h2>Trending community playlists</h2>
-    <div class="trend-scroll" id="trendScrollMobile"></div>
+    <div class="view-panel" id="panelEq-m">
+      <div class="view-header-mobile"><button data-back><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><div class="title">Equalizer</div></div>
+      <div style="padding:0 0 12px;" id="eqPanelMobile"></div>
+    </div>
 
-    <h2 id="gridHeadingMobile">Quick picks</h2>
-    <div class="track-grid" id="gridMobile"></div>
-    <div class="empty-state" id="noResultsMobile" style="display:none;">No tracks match your search.</div>
+    <div class="view-panel" id="panelListen-m">
+      <div class="view-header-mobile"><button data-back><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><div class="title">Listen Together</div></div>
+      <div style="padding:0 0 12px;" id="listenPanelMobile"></div>
+    </div>
+
+    <div class="view-panel" id="panelSettings-m">
+      <div class="view-header-mobile"><button data-back><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><div class="title">Settings</div></div>
+      <div style="padding:0 0 12px;" id="settingsPanelMobile"></div>
+    </div>
   </div>
 
   <div class="mini-player" id="miniPlayer" style="display:none;">
@@ -452,35 +526,34 @@
   </div>
 
   <div class="bottom-nav">
-    <div class="bn-item active">
+    <div class="bn-item active" data-view="home">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>
       Home
     </div>
-    <div class="bn-item" id="bnSearch">
+    <div class="bn-item" id="bnSearch" data-view="home">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       Search
     </div>
-    <div class="bn-item" id="bnMic">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v3"/></svg>
-      Voice
-    </div>
-    <div class="bn-item" id="bnQueue">
+    <div class="bn-item" data-view="library">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13M9 18a3 3 0 11-6 0 3 3 0 016 0zM21 16a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-      Queue
+      Library
     </div>
-    <a href="info.html" class="bn-item">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-      More
-    </a>
+    <div class="bn-item" data-view="equalizer">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21V14M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+      Equalizer
+    </div>
+    <div class="bn-item" data-view="settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82"/></svg>
+      Settings
+    </div>
   </div>
 </div>
 
-<!-- ============ NOW PLAYING SHEET (mobile) ============ -->
 <div class="np-sheet" id="npSheet">
   <div class="sheet-topbar">
     <button id="sheetClose" aria-label="Close"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
     <div class="sheet-label" id="sheetLabel">Now Playing</div>
-    <button aria-label="More"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+    <button id="sheetAddToPlaylistBtn" aria-label="Add to playlist"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13M9 18a3 3 0 11-6 0 3 3 0 016 0zM21 16a3 3 0 11-6 0 3 3 0 016 0zM3 9h4"/></svg></button>
   </div>
 
   <div class="sheet-art gradient-1" id="sheetArt"></div>
@@ -496,13 +569,8 @@
     </div>
   </div>
 
-  <div class="sheet-seek-row">
-    <input type="range" class="sheet-seek" id="sheetSeek" min="0" max="100" value="0" disabled aria-label="Seek">
-  </div>
-  <div class="sheet-times">
-    <span id="sheetCurTime">0:00</span>
-    <span id="sheetDurTime">0:00</span>
-  </div>
+  <div class="sheet-seek-row"><input type="range" class="sheet-seek" id="sheetSeek" min="0" max="100" value="0" disabled aria-label="Seek"></div>
+  <div class="sheet-times"><span id="sheetCurTime">0:00</span><span id="sheetDurTime">0:00</span></div>
 
   <div class="sheet-controls">
     <button class="ctrl-btn" id="sheetPrevBtn" aria-label="Previous" disabled>
@@ -530,11 +598,22 @@
   </div>
 </div>
 
+<div class="modal-backdrop" id="playlistModal">
+  <div class="modal">
+    <h3>Add to playlist</h3>
+    <div class="modal-playlist-list" id="modalPlaylistList"></div>
+    <input type="text" id="newPlaylistNameInput" placeholder="New playlist name…">
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="modalCancelBtn">Cancel</button>
+      <button class="btn" id="modalCreateBtn">Create &amp; add</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
-<audio id="audio" preload="metadata"></audio>
+<audio id="audio" preload="metadata" crossorigin="anonymous"></audio>
 
 <script>
-// ---- Demo catalog (original fictional metadata + freely-licensed demo audio) ----
 const TRACKS = [
   { id:1, title:"Amber Skyline",   artist:"The Northbound",   grad:"gradient-1", src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
   { id:2, title:"Violet Hours",    artist:"Coastline Static", grad:"gradient-2", src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
@@ -543,36 +622,58 @@ const TRACKS = [
   { id:5, title:"Paper Lanterns",  artist:"Halfmoon Radio",   grad:"gradient-5", src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3" },
   { id:6, title:"Low Tide Drive",  artist:"The Northbound",   grad:"gradient-6", src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3" },
 ];
-
 const DEMO_LYRICS = [
-  {t:0,   line:"♪ instrumental"},
-  {t:8,   line:"City lights are bleeding gold"},
-  {t:14,  line:"through a window down the hall"},
-  {t:20,  line:"and I would drive all night"},
-  {t:26,  line:"just to feel the light"},
-  {t:33,  line:"on the other side"},
-  {t:40,  line:"♪ instrumental"},
-  {t:48,  line:"You said the static keeps you warm"},
-  {t:54,  line:"like a station out of range"},
-  {t:60,  line:"and I would drive all night"},
-  {t:66,  line:"just to feel the light"},
-  {t:73,  line:"on the other side"},
-  {t:82,  line:"♪ instrumental"},
+  {t:0,line:"♪ instrumental"},{t:8,line:"City lights are bleeding gold"},{t:14,line:"through a window down the hall"},
+  {t:20,line:"and I would drive all night"},{t:26,line:"just to feel the light"},{t:33,line:"on the other side"},
+  {t:40,line:"♪ instrumental"},{t:48,line:"You said the static keeps you warm"},{t:54,line:"like a station out of range"},
+  {t:60,line:"and I would drive all night"},{t:66,line:"just to feel the light"},{t:73,line:"on the other side"},{t:82,line:"♪ instrumental"},
 ];
-
 const CHIPS = ["Feel good","Relax","Romance","Party","Energize","Focus","Chill"];
 const GENRES = ["Chill","Focus","Commute","Gaming","Energize","Party","Feel good","Romance"];
-
-// ---- Live backend config ----
-// Set this to your deployed oli-web-api URL to enable real search/streaming.
-// Leave empty to stay in demo mode (SoundHelix placeholder tracks only).
-const API_BASE = "https://oli-web-api.onrender.com"; // e.g. "https://oli-web-api.onrender.com"
 const GRADIENTS = ["gradient-1","gradient-2","gradient-3","gradient-4","gradient-5","gradient-6"];
+const ACCENTS = { amber:"#F2A93B", teal:"#3FBFAE", violet:"#7A5CFA", rose:"#E8637B" };
+const EQ_BANDS = [
+  {freq:60, type:'lowshelf'}, {freq:230, type:'peaking'}, {freq:910, type:'peaking'},
+  {freq:3000, type:'peaking'}, {freq:14000, type:'highshelf'},
+];
+
 function gradFor(id){
   let hash = 0;
   for(const ch of String(id)) hash = (hash*31 + ch.charCodeAt(0)) >>> 0;
   return GRADIENTS[hash % GRADIENTS.length];
 }
+function fmt(s){
+  if(!isFinite(s)) return "0:00";
+  const m = Math.floor(s/60), sec = Math.floor(s%60);
+  return m + ":" + String(sec).padStart(2,'0');
+}
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+const STORAGE_KEY = 'oli_state_v1';
+function loadState(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    return { ...defaultState(), ...parsed };
+  } catch(e) { return defaultState(); }
+}
+function defaultState(){
+  return {
+    apiBase: "",
+    accent: "amber",
+    listenServerUrl: "wss://oli-server.onrender.com/ws",
+    eqEnabled: false,
+    eqGains: EQ_BANDS.map(()=>0),
+    favorites: [],
+    history: [],
+    playlists: [],
+  };
+}
+let state = loadState();
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+let API_BASE = state.apiBase;
 function isApiConfigured(){ return API_BASE.trim().length > 0; }
 
 let liveResults = null;
@@ -583,66 +684,10 @@ let isLoading = false;
 let shuffled = false;
 let repeatMode = false;
 let sheetShowingLyrics = false;
+let pendingPlaylistTrack = null;
 
 const audio = document.getElementById('audio');
-const playBtn = document.getElementById('playBtn');
-const playIcon = document.getElementById('playIcon');
-const seek = document.getElementById('seek');
-const curTime = document.getElementById('curTime');
-const durTime = document.getElementById('durTime');
-const vol = document.getElementById('vol');
-const npTitle = document.getElementById('npTitle');
-const npArtist = document.getElementById('npArtist');
-const npArt = document.getElementById('npArt');
-const likeBtn = document.getElementById('likeBtn');
-const lyricsPanel = document.getElementById('lyricsPanel');
-const lyricsList = document.getElementById('lyricsList');
-const lyricsEmpty = document.getElementById('lyricsEmpty');
-const lyricsToggle = document.getElementById('lyricsToggle');
-const shuffleBtn = document.getElementById('shuffleBtn');
-const repeatBtn = document.getElementById('repeatBtn');
-const prevBtn = document.getElementById('prevBtn');
-const nextBtn = document.getElementById('nextBtn');
 const toast = document.getElementById('toast');
-const noResults = document.getElementById('noResults');
-
-// mobile elements
-const miniPlayer = document.getElementById('miniPlayer');
-const miniArt = document.getElementById('miniArt');
-const miniTitle = document.getElementById('miniTitle');
-const miniArtist = document.getElementById('miniArtist');
-const miniPlayBtn = document.getElementById('miniPlayBtn');
-const miniPlayIcon = document.getElementById('miniPlayIcon');
-const miniSeekFill = document.getElementById('miniSeekFill');
-const npSheet = document.getElementById('npSheet');
-const sheetArt = document.getElementById('sheetArt');
-const sheetTitle = document.getElementById('sheetTitle');
-const sheetArtist = document.getElementById('sheetArtist');
-const sheetPlayBtn = document.getElementById('sheetPlayBtn');
-const sheetPlayIcon = document.getElementById('sheetPlayIcon');
-const sheetSeek = document.getElementById('sheetSeek');
-const sheetCurTime = document.getElementById('sheetCurTime');
-const sheetDurTime = document.getElementById('sheetDurTime');
-const sheetLikeBtn = document.getElementById('sheetLikeBtn');
-const sheetPrevBtn = document.getElementById('sheetPrevBtn');
-const sheetNextBtn = document.getElementById('sheetNextBtn');
-const sheetShuffleBtn = document.getElementById('sheetShuffleBtn');
-const sheetRepeatBtn = document.getElementById('sheetRepeatBtn');
-const sheetLyricsBtn = document.getElementById('sheetLyricsBtn');
-const sheetLyricsView = document.getElementById('sheetLyricsView');
-const sheetLyricsList = document.getElementById('sheetLyricsList');
-const sheetLyricsEmpty = document.getElementById('sheetLyricsEmpty');
-
-const ICON_PLAY = '<path d="M8 5v14l11-7z"/>';
-const ICON_PAUSE = '<path d="M7 5h4v14H7zm6 0h4v14h-4z"/>';
-const ICON_LOADING = '<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="40" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite"/></circle>';
-
-function fmt(s){
-  if(!isFinite(s)) return "0:00";
-  const m = Math.floor(s/60), sec = Math.floor(s%60);
-  return m + ":" + String(sec).padStart(2,'0');
-}
-
 function showToast(msg){
   toast.textContent = msg;
   toast.classList.add('show');
@@ -650,32 +695,52 @@ function showToast(msg){
   showToast._t = setTimeout(()=> toast.classList.remove('show'), 2800);
 }
 
-// ---- Static home content (mood chips / genres / trending) ----
+let currentView = 'home';
+function showView(view){
+  currentView = view;
+  const map = { home:'Home', library:'Library', equalizer:'Eq', 'listen-together':'Listen', settings:'Settings' };
+  Object.entries(map).forEach(([v, suffix])=>{
+    const d = document.getElementById(`panel${suffix}-d`);
+    const m = document.getElementById(`panel${suffix}-m`);
+    if(d) d.classList.toggle('active', v === view);
+    if(m) m.classList.toggle('active', v === view);
+  });
+  document.querySelectorAll('.nav-item[data-view]').forEach(el=> el.classList.toggle('active', el.dataset.view === view));
+  document.querySelectorAll('.bn-item[data-view]').forEach(el=> el.classList.toggle('active', el.dataset.view === view));
+
+  const isHome = view === 'home';
+  document.getElementById('mobileTopbarHome').style.display = isHome ? 'flex' : 'none';
+  document.getElementById('mobileSearchBar').style.display = isHome ? 'flex' : 'none';
+
+  if(view === 'library') renderLibraryViews();
+  if(view === 'equalizer') renderEqualizerViews();
+  if(view === 'listen-together') renderListenTogetherViews();
+  if(view === 'settings') renderSettingsViews();
+}
+document.querySelectorAll('[data-view]').forEach(el=> el.addEventListener('click', ()=> showView(el.dataset.view)));
+document.querySelectorAll('.view-header-mobile [data-back]').forEach(btn=> btn.addEventListener('click', ()=> showView('home')));
+
 function renderStaticSections(){
   [document.getElementById('chipRowDesktop'), document.getElementById('chipRowMobile')].forEach(row=>{
     if(!row) return;
     row.innerHTML = '';
     CHIPS.forEach(label=>{
       const chip = document.createElement('div');
-      chip.className = 'chip';
-      chip.textContent = label;
+      chip.className = 'chip'; chip.textContent = label;
       chip.onclick = ()=> triggerSearch(label);
       row.appendChild(chip);
     });
   });
-
   [document.getElementById('genreGridDesktop'), document.getElementById('genreGridMobile')].forEach(grid=>{
     if(!grid) return;
     grid.innerHTML = '';
     GENRES.forEach(label=>{
       const card = document.createElement('div');
-      card.className = 'genre-card';
-      card.textContent = label;
+      card.className = 'genre-card'; card.textContent = label;
       card.onclick = ()=> triggerSearch(label);
       grid.appendChild(card);
     });
   });
-
   [document.getElementById('trendScrollDesktop'), document.getElementById('trendScrollMobile')].forEach(scroll=>{
     if(!scroll) return;
     scroll.innerHTML = '';
@@ -686,51 +751,64 @@ function renderStaticSections(){
         <div class="trend-art ${t.grad}"><div class="playbtn"><div class="playbtn-circle">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
         </div></div></div>
-        <div class="t-title">${t.title}</div>
-        <div class="t-artist">${t.artist}</div>`;
+        <div class="t-title">${t.title}</div><div class="t-artist">${t.artist}</div>`;
       card.onclick = ()=> playTrackById(t.id, TRACKS);
       scroll.appendChild(card);
     });
   });
 }
-
 function triggerSearch(term){
-  const inputs = [document.getElementById('searchInput'), document.getElementById('searchInputMobile')];
-  inputs.forEach(i => { if(i) i.value = term; });
+  showView('home');
+  [document.getElementById('searchInput'), document.getElementById('searchInputMobile')].forEach(i => { if(i) i.value = term; });
   runSearch(term);
 }
 
-// ---- Track grid rendering (desktop + mobile share the same data) ----
+function isFavorite(id){ return state.favorites.some(t=>t.id===id); }
+function toggleFavorite(track){
+  const idx = state.favorites.findIndex(t=>t.id===track.id);
+  if(idx > -1){ state.favorites.splice(idx,1); showToast("Removed from Favorites"); }
+  else { state.favorites.unshift(track); showToast("Added to Favorites"); }
+  saveState();
+  renderGrid(currentSearchTerm());
+  renderQueue();
+  if(currentIndex > -1 && queue[currentIndex].id === track.id) syncLikeButtons();
+  if(currentView === 'library') renderLibraryViews();
+}
+function syncLikeButtons(){
+  const t = currentIndex > -1 ? queue[currentIndex] : null;
+  const liked = t ? isFavorite(t.id) : false;
+  document.getElementById('likeBtn').classList.toggle('liked', liked);
+  document.getElementById('sheetLikeBtn').classList.toggle('liked', liked);
+}
+
 function renderGrid(filter){
   const targets = [
     { grid: document.getElementById('grid'), heading: document.getElementById('gridHeading'), subtext: document.getElementById('gridSubtext'), empty: document.getElementById('noResults') },
     { grid: document.getElementById('gridMobile'), heading: document.getElementById('gridHeadingMobile'), subtext: null, empty: document.getElementById('noResultsMobile') },
   ];
-
   let list;
   if(liveResults !== null){
     list = liveResults;
     targets.forEach(t => t.heading && (t.heading.textContent = filter ? `Results for "${filter}"` : "Search results"));
   } else {
-    list = filter
-      ? TRACKS.filter(t => t.title.toLowerCase().includes(filter) || t.artist.toLowerCase().includes(filter))
-      : TRACKS;
+    list = filter ? TRACKS.filter(t => t.title.toLowerCase().includes(filter) || t.artist.toLowerCase().includes(filter)) : TRACKS;
     targets.forEach(t => t.heading && (t.heading.textContent = "Quick picks"));
   }
-
   targets.forEach(({grid, empty})=>{
     if(!grid) return;
     grid.innerHTML = '';
     if(empty) empty.style.display = list.length === 0 ? 'block' : 'none';
     list.forEach((t)=>{
       const isCurrentTrack = currentIndex > -1 && queue[currentIndex] && queue[currentIndex].id === t.id;
+      const liked = isFavorite(t.id);
       const card = document.createElement('div');
       card.className = 'track-card' + (isCurrentTrack ? ' playing':'');
       const showEq = isCurrentTrack && isPlaying;
-      const artInner = t.thumbnail
-        ? `<img src="${t.thumbnail}" alt="" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">`
-        : '';
+      const artInner = t.thumbnail ? `<img src="${t.thumbnail}" alt="" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">` : '';
       card.innerHTML = `
+        <button class="card-fav-btn ${liked?'liked':''}" aria-label="Favorite">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="${liked?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 000-7.8z"/></svg>
+        </button>
         <div class="art ${t.thumbnail ? '' : t.grad}">
           ${artInner}
           ${showEq ? `<div class="eq-mini"><span></span><span></span><span></span></div>` : `
@@ -740,7 +818,8 @@ function renderGrid(filter){
         </div>
         <div class="t-title">${t.title}</div>
         <div class="t-artist">${t.artist}</div>`;
-      card.onclick = ()=> playTrackById(t.id, list);
+      card.querySelector('.card-fav-btn').onclick = (e)=>{ e.stopPropagation(); toggleFavorite(t); };
+      card.addEventListener('click', (e)=>{ if(!e.target.closest('.card-fav-btn')) playTrackById(t.id, list); });
       grid.appendChild(card);
     });
   });
@@ -750,43 +829,33 @@ function renderQueue(){
   const list = document.getElementById('queueList');
   if(!list) return;
   list.innerHTML = '';
-  if(queue.length === 0){
-    list.innerHTML = '<div class="empty-state">Queue is empty.</div>';
-    return;
-  }
+  if(queue.length === 0){ list.innerHTML = '<div class="empty-state">Queue is empty.</div>'; return; }
   queue.forEach((t, i)=>{
     const row = document.createElement('div');
     row.className = 'row-item' + (i===currentIndex?' playing':'');
     row.innerHTML = `
       <div class="idx">${i===currentIndex && isPlaying ? '♪' : i+1}</div>
       <div class="art-sm ${t.thumbnail ? '' : t.grad}" ${t.thumbnail ? `style="background-image:url('${t.thumbnail}');background-size:cover;background-position:center;"` : ''}></div>
-      <div class="info">
-        <div class="t-title">${t.title}</div>
-        <div class="t-artist">${t.artist}</div>
-      </div>
-      <div class="dur">3:42</div>`;
-    row.onclick = ()=> playTrack(i);
+      <div class="info"><div class="t-title">${t.title}</div><div class="t-artist">${t.artist}</div></div>
+      <div class="dur">${t.duration ? fmt(t.duration) : '—'}</div>`;
+    row.addEventListener('click', ()=> playTrack(i));
     list.appendChild(row);
   });
 }
 
 function renderLyrics(hasTrack){
-  [ {list: lyricsList, empty: lyricsEmpty}, {list: sheetLyricsList, empty: sheetLyricsEmpty} ].forEach(({list, empty})=>{
+  [ {list: document.getElementById('lyricsList'), empty: document.getElementById('lyricsEmpty')},
+    {list: document.getElementById('sheetLyricsList'), empty: document.getElementById('sheetLyricsEmpty')} ].forEach(({list, empty})=>{
     if(!list) return;
     list.innerHTML = '';
     if(!hasTrack){
-      if(empty){
-        empty.textContent = currentIndex === -1 ? "Play a track to see lyrics here." : "No synced lyrics for this track yet.";
-        empty.style.display = 'block';
-      }
+      if(empty){ empty.textContent = currentIndex === -1 ? "Play a track to see lyrics here." : "No synced lyrics for this track yet."; empty.style.display = 'block'; }
       return;
     }
     if(empty) empty.style.display = 'none';
     DEMO_LYRICS.forEach((l)=>{
       const div = document.createElement('div');
-      div.className = 'lyric-line';
-      div.dataset.t = l.t;
-      div.textContent = l.line;
+      div.className = 'lyric-line'; div.dataset.t = l.t; div.textContent = l.line;
       list.appendChild(div);
     });
   });
@@ -800,41 +869,48 @@ function playTrackById(id, sourceList){
   playTrack(i);
 }
 
-async function resolveStreamUrl(track){
+function resolvePlaySrc(track){
   if(track.src) return track.src;
-  if(!isApiConfigured()) throw new Error("No backend configured");
-  const res = await fetch(`${API_BASE}/api/stream/${encodeURIComponent(track.id)}`);
-  if(!res.ok){
-    const body = await res.json().catch(()=>({}));
-    throw new Error(body.error || `Stream lookup failed (${res.status})`);
-  }
-  const data = await res.json();
-  if(!data.streamUrl) throw new Error("No stream URL returned");
-  track.src = data.streamUrl;
-  return data.streamUrl;
+  if(!isApiConfigured()) return null;
+  return `${API_BASE}/api/proxy/${encodeURIComponent(track.id)}`;
 }
 
+const ICON_PLAY = '<path d="M8 5v14l11-7z"/>';
+const ICON_PAUSE = '<path d="M7 5h4v14H7zm6 0h4v14h-4z"/>';
+const ICON_LOADING = '<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="40" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite"/></circle>';
+
 function updateNowPlayingUI(t){
-  npTitle.textContent = t.title;
-  npArtist.textContent = t.artist;
-  sheetTitle.textContent = t.title;
-  sheetArtist.textContent = t.artist;
-  miniTitle.textContent = t.title;
-  miniArtist.textContent = t.artist;
+  document.getElementById('npTitle').textContent = t.title;
+  document.getElementById('npArtist').textContent = t.artist;
+  document.getElementById('sheetTitle').textContent = t.title;
+  document.getElementById('sheetArtist').textContent = t.artist;
+  document.getElementById('miniTitle').textContent = t.title;
+  document.getElementById('miniArtist').textContent = t.artist;
 
   const bg = t.thumbnail ? `background-image:url('${t.thumbnail}');` : '';
   const cls = t.thumbnail ? '' : ' ' + t.grad;
 
+  const npArt = document.getElementById('npArt');
   npArt.className = 'np-art art loading' + cls;
   npArt.style.cssText = `width:56px;height:56px;border-radius:8px;${bg}`;
 
+  const sheetArt = document.getElementById('sheetArt');
   sheetArt.className = 'sheet-art' + cls;
   sheetArt.style.cssText = bg;
 
+  const miniArt = document.getElementById('miniArt');
   miniArt.className = 'mini-art' + cls;
   miniArt.style.cssText = bg;
 
-  miniPlayer.style.display = 'flex';
+  document.getElementById('miniPlayer').style.display = 'flex';
+  syncLikeButtons();
+}
+
+function addToHistory(track){
+  state.history = state.history.filter(h => h.track.id !== track.id);
+  state.history.unshift({ track, playedAt: Date.now() });
+  if(state.history.length > 100) state.history.length = 100;
+  saveState();
 }
 
 async function playTrack(i){
@@ -845,88 +921,74 @@ async function playTrack(i){
   updatePlayIcon();
 
   updateNowPlayingUI(t);
-  likeBtn.disabled = false;
-  prevBtn.disabled = false;
-  nextBtn.disabled = false;
-  sheetPrevBtn.disabled = false;
-  sheetNextBtn.disabled = false;
-  seek.disabled = false;
-  sheetSeek.disabled = false;
+  ['likeBtn','prevBtn','nextBtn','sheetPrevBtn','sheetNextBtn','seek','sheetSeek'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.disabled = false;
+  });
 
   const isDemoTrack = TRACKS.some(dt => dt.id === t.id);
   renderLyrics(isDemoTrack);
   renderGrid(currentSearchTerm());
   renderQueue();
+  addToHistory(t);
+  if(currentView === 'library') renderLibraryViews();
 
+  const src = resolvePlaySrc(t);
+  if(!src){
+    isLoading = false; isPlaying = false; updatePlayIcon();
+    document.getElementById('npArt').classList.remove('loading');
+    showToast("No backend connected — set an API URL in Settings to play real tracks.");
+    return;
+  }
   try {
-    const url = await resolveStreamUrl(t);
-    audio.src = url;
+    audio.src = src;
     await audio.play();
+    ensureEqualizerWired();
   } catch (err) {
-    isLoading = false;
-    isPlaying = false;
-    updatePlayIcon();
-    npArt.classList.remove('loading');
-    showToast(!t.src && !isApiConfigured()
-      ? "No backend connected — this track can't stream in demo mode."
-      : "Couldn't play this track — " + (err.message || "check your connection and try again."));
+    isLoading = false; isPlaying = false; updatePlayIcon();
+    document.getElementById('npArt').classList.remove('loading');
+    showToast("Couldn't play this track — " + (err.message || "check your connection and try again."));
   }
 }
 
 function updatePlayIcon(){
   const icon = isLoading ? ICON_LOADING : (isPlaying ? ICON_PAUSE : ICON_PLAY);
-  playIcon.innerHTML = icon;
-  sheetPlayIcon.innerHTML = isLoading ? ICON_LOADING : (isPlaying ? ICON_PAUSE : ICON_PLAY);
-  miniPlayIcon.innerHTML = isLoading ? ICON_LOADING : (isPlaying ? ICON_PAUSE : ICON_PLAY);
-  playBtn.disabled = isLoading;
-  npArt.classList.toggle('loading', isLoading);
+  document.getElementById('playIcon').innerHTML = icon;
+  document.getElementById('sheetPlayIcon').innerHTML = icon;
+  document.getElementById('miniPlayIcon').innerHTML = icon;
+  document.getElementById('playBtn').disabled = isLoading;
+  document.getElementById('npArt').classList.toggle('loading', isLoading);
 }
 
 function togglePlay(){
   if(currentIndex === -1){ playTrack(0); return; }
-  if(audio.paused){
-    audio.play().catch(()=> showToast("Playback failed — try again."));
-  } else {
-    audio.pause();
-    isPlaying = false;
-  }
+  if(audio.paused){ audio.play().catch(()=> showToast("Playback failed — try again.")); }
+  else { audio.pause(); isPlaying = false; }
   updatePlayIcon();
   renderQueue();
 }
-playBtn.onclick = togglePlay;
-sheetPlayBtn.onclick = togglePlay;
-miniPlayBtn.onclick = (e)=>{ e.stopPropagation(); togglePlay(); };
+document.getElementById('playBtn').onclick = togglePlay;
+document.getElementById('sheetPlayBtn').onclick = togglePlay;
+document.getElementById('miniPlayBtn').onclick = (e)=>{ e.stopPropagation(); togglePlay(); };
 
 audio.addEventListener('playing', ()=>{ isLoading=false; isPlaying=true; updatePlayIcon(); renderGrid(currentSearchTerm()); renderQueue(); });
 audio.addEventListener('pause', ()=>{ if(!audio.ended){ isPlaying=false; updatePlayIcon(); renderGrid(currentSearchTerm()); renderQueue(); } });
 audio.addEventListener('waiting', ()=>{ isLoading=true; updatePlayIcon(); });
 audio.addEventListener('canplay', ()=>{ isLoading=false; updatePlayIcon(); });
 audio.addEventListener('error', ()=>{
-  isLoading = false; isPlaying = false;
-  updatePlayIcon();
+  isLoading = false; isPlaying = false; updatePlayIcon();
   showToast("This track couldn't load. Skipping…");
   setTimeout(goNext, 900);
 });
 
-function goNext(){
-  if(currentIndex === -1) return;
-  let next = currentIndex+1;
-  if(next >= queue.length) next = 0;
-  playTrack(next);
-}
-function goPrev(){
-  if(currentIndex === -1) return;
-  if(audio.currentTime > 3){ audio.currentTime = 0; return; }
-  let prev = currentIndex-1;
-  if(prev < 0) prev = queue.length-1;
-  playTrack(prev);
-}
-nextBtn.onclick = goNext; prevBtn.onclick = goPrev;
-sheetNextBtn.onclick = goNext; sheetPrevBtn.onclick = goPrev;
+function goNext(){ if(currentIndex === -1) return; let n = currentIndex+1; if(n >= queue.length) n = 0; playTrack(n); }
+function goPrev(){ if(currentIndex === -1) return; if(audio.currentTime > 3){ audio.currentTime = 0; return; } let p = currentIndex-1; if(p < 0) p = queue.length-1; playTrack(p); }
+document.getElementById('nextBtn').onclick = goNext; document.getElementById('prevBtn').onclick = goPrev;
+document.getElementById('sheetNextBtn').onclick = goNext; document.getElementById('sheetPrevBtn').onclick = goPrev;
 
 function toggleShuffle(){
   shuffled = !shuffled;
-  [shuffleBtn, sheetShuffleBtn].forEach(b=>b.classList.toggle('active-toggle', shuffled));
+  ['shuffleBtn','sheetShuffleBtn'].forEach(id=> document.getElementById(id).classList.toggle('active-toggle', shuffled));
   const currentTrack = currentIndex>-1 ? queue[currentIndex] : null;
   queue = shuffled ? [...TRACKS].sort(()=>Math.random()-0.5) : [...TRACKS];
   if(currentTrack) currentIndex = queue.findIndex(t=>t.id===currentTrack.id);
@@ -935,25 +997,25 @@ function toggleShuffle(){
 }
 function toggleRepeat(){
   repeatMode = !repeatMode;
-  [repeatBtn, sheetRepeatBtn].forEach(b=>b.classList.toggle('active-toggle', repeatMode));
+  ['repeatBtn','sheetRepeatBtn'].forEach(id=> document.getElementById(id).classList.toggle('active-toggle', repeatMode));
   audio.loop = repeatMode;
   showToast(repeatMode ? "Repeat on" : "Repeat off");
 }
-shuffleBtn.onclick = toggleShuffle; sheetShuffleBtn.onclick = toggleShuffle;
-repeatBtn.onclick = toggleRepeat; sheetRepeatBtn.onclick = toggleRepeat;
+document.getElementById('shuffleBtn').onclick = toggleShuffle; document.getElementById('sheetShuffleBtn').onclick = toggleShuffle;
+document.getElementById('repeatBtn').onclick = toggleRepeat; document.getElementById('sheetRepeatBtn').onclick = toggleRepeat;
 
 audio.addEventListener('timeupdate', ()=>{
   if(!audio.duration) return;
   const pct = (audio.currentTime/audio.duration)*100;
-  seek.value = pct;
-  sheetSeek.value = pct;
-  miniSeekFill.style.width = pct + '%';
-  curTime.textContent = fmt(audio.currentTime);
-  durTime.textContent = fmt(audio.duration);
-  sheetCurTime.textContent = fmt(audio.currentTime);
-  sheetDurTime.textContent = fmt(audio.duration);
+  document.getElementById('seek').value = pct;
+  document.getElementById('sheetSeek').value = pct;
+  document.getElementById('miniSeekFill').style.width = pct + '%';
+  document.getElementById('curTime').textContent = fmt(audio.currentTime);
+  document.getElementById('durTime').textContent = fmt(audio.duration);
+  document.getElementById('sheetCurTime').textContent = fmt(audio.currentTime);
+  document.getElementById('sheetDurTime').textContent = fmt(audio.duration);
 
-  [lyricsList, sheetLyricsList].forEach(list=>{
+  [document.getElementById('lyricsList'), document.getElementById('sheetLyricsList')].forEach(list=>{
     const lines = list.children;
     if(lines.length === 0) return;
     const t = audio.currentTime % 90;
@@ -964,81 +1026,67 @@ audio.addEventListener('timeupdate', ()=>{
     if(activeEl) activeEl.scrollIntoView({block:'center', behavior:'smooth'});
   });
 });
-
 audio.addEventListener('ended', ()=>{ if(!repeatMode) goNext(); });
 
 function onSeekInput(e){ if(audio.duration) audio.currentTime = (e.target.value/100)*audio.duration; }
-seek.addEventListener('input', onSeekInput);
-sheetSeek.addEventListener('input', onSeekInput);
-
-vol.addEventListener('input', ()=>{ audio.volume = vol.value/100; });
+document.getElementById('seek').addEventListener('input', onSeekInput);
+document.getElementById('sheetSeek').addEventListener('input', onSeekInput);
+document.getElementById('vol').addEventListener('input', (e)=>{ audio.volume = e.target.value/100; });
 audio.volume = 0.7;
 
 function toggleLike(){
-  const liked = likeBtn.classList.toggle('liked');
-  sheetLikeBtn.classList.toggle('liked', liked);
-  showToast(liked ? "Added to Liked Songs" : "Removed from Liked Songs");
+  if(currentIndex === -1) return;
+  toggleFavorite(queue[currentIndex]);
 }
-likeBtn.onclick = toggleLike;
-sheetLikeBtn.onclick = toggleLike;
-document.getElementById('sheetDownloadBtn').onclick = ()=> showToast("Download requires the Android or Desktop app.");
-
-function toggleLyrics(){
-  lyricsPanel.classList.toggle('open');
-  lyricsToggle.classList.toggle('active');
-}
-lyricsToggle.onclick = toggleLyrics;
-document.getElementById('lyricsCloseMobile').onclick = toggleLyrics;
-
-sheetLyricsBtn.onclick = ()=>{
-  sheetShowingLyrics = !sheetShowingLyrics;
-  sheetLyricsView.classList.toggle('open', sheetShowingLyrics);
-  sheetLyricsBtn.classList.toggle('active-toggle', sheetShowingLyrics);
+document.getElementById('likeBtn').onclick = toggleLike;
+document.getElementById('sheetLikeBtn').onclick = toggleLike;
+document.getElementById('sheetDownloadBtn').onclick = ()=> showToast("Download requires the Android or Desktop app — browsers can't store offline files like this.");
+document.getElementById('sheetAddToPlaylistBtn').onclick = ()=>{
+  if(currentIndex === -1){ showToast("Play something first."); return; }
+  openPlaylistModal(queue[currentIndex]);
 };
 
-// ---- Now Playing sheet open/close (mobile) ----
-function openSheet(){ npSheet.classList.add('open'); }
-function closeSheet(){ npSheet.classList.remove('open'); }
+function toggleLyricsPanel(){
+  document.getElementById('lyricsPanel').classList.toggle('open');
+  document.getElementById('lyricsToggle').classList.toggle('active');
+}
+document.getElementById('lyricsToggle').onclick = toggleLyricsPanel;
+document.getElementById('lyricsCloseMobile').onclick = toggleLyricsPanel;
+document.getElementById('sheetLyricsBtn').onclick = ()=>{
+  sheetShowingLyrics = !sheetShowingLyrics;
+  document.getElementById('sheetLyricsView').classList.toggle('open', sheetShowingLyrics);
+  document.getElementById('sheetLyricsBtn').classList.toggle('active-toggle', sheetShowingLyrics);
+};
+document.getElementById('sheetQueueBtn').onclick = ()=> showToast("Queue is visible on the Home tab, under 'Up next'.");
+document.getElementById('sheetTimerBtn').onclick = ()=> showToast("Sleep timer isn't implemented in the web player yet.");
+
+function openSheet(){ document.getElementById('npSheet').classList.add('open'); }
+function closeSheet(){ document.getElementById('npSheet').classList.remove('open'); }
 document.getElementById('miniInfoTap').addEventListener('click', ()=>{ if(currentIndex>-1) openSheet(); });
-miniArt.addEventListener('click', ()=>{ if(currentIndex>-1) openSheet(); });
+document.getElementById('miniArt').addEventListener('click', ()=>{ if(currentIndex>-1) openSheet(); });
 document.getElementById('sheetClose').onclick = closeSheet;
 
-// swipe-down to close sheet
 let sheetTouchStartY = null;
-npSheet.addEventListener('touchstart', (e)=>{ sheetTouchStartY = e.touches[0].clientY; }, {passive:true});
-npSheet.addEventListener('touchmove', (e)=>{
+const npSheetEl = document.getElementById('npSheet');
+npSheetEl.addEventListener('touchstart', (e)=>{ sheetTouchStartY = e.touches[0].clientY; }, {passive:true});
+npSheetEl.addEventListener('touchmove', (e)=>{
   if(sheetTouchStartY === null) return;
-  const dy = e.touches[0].clientY - sheetTouchStartY;
-  if(dy > 80) closeSheet();
+  if(e.touches[0].clientY - sheetTouchStartY > 80) closeSheet();
 }, {passive:true});
 
-// ---- Search ----
 function currentSearchTerm(){
-  const el = document.getElementById('searchInput');
-  const elM = document.getElementById('searchInputMobile');
+  const el = document.getElementById('searchInput'), elM = document.getElementById('searchInputMobile');
   return ((el && el.value) || (elM && elM.value) || '').trim().toLowerCase();
 }
-
-let searchDebounce;
-let searchRequestId = 0;
-
+let searchDebounce, searchRequestId = 0;
 async function runSearch(term){
   const subtext = document.getElementById('gridSubtext');
-
   if(!term){
     liveResults = null;
-    if(subtext) subtext.textContent = isApiConfigured()
-      ? "Search above to find real tracks."
-      : "Demo playback — set API_BASE in the script to search and stream real tracks.";
-    renderGrid('');
-    return;
+    if(subtext) subtext.textContent = isApiConfigured() ? "Search above to find real tracks." : "Demo playback — connect oli-web-api in Settings to search and stream real tracks.";
+    renderGrid(''); return;
   }
-
-  if(!isApiConfigured()){
-    renderGrid(term.toLowerCase());
-    return;
-  }
-
+  if(!isApiConfigured()){ renderGrid(term.toLowerCase()); return; }
   const reqId = ++searchRequestId;
   if(subtext) subtext.textContent = "Searching…";
   try {
@@ -1046,21 +1094,17 @@ async function runSearch(term){
     if(reqId !== searchRequestId) return;
     if(!res.ok) throw new Error(`Search failed (${res.status})`);
     const data = await res.json();
-    liveResults = (data.results || []).map(t => ({
-      id: t.id, title: t.title, artist: t.artist, thumbnail: t.thumbnail,
-      grad: gradFor(t.id), src: null,
-    }));
+    liveResults = (data.results || []).map(t => ({ id:t.id, title:t.title, artist:t.artist, thumbnail:t.thumbnail, duration:t.duration, grad:gradFor(t.id), src:null }));
     if(subtext) subtext.textContent = `${liveResults.length} result${liveResults.length===1?'':'s'} for "${term}"`;
     renderGrid(term);
   } catch (err) {
     if(reqId !== searchRequestId) return;
     liveResults = [];
-    if(subtext) subtext.textContent = "Search failed — is oli-web-api running?";
+    if(subtext) subtext.textContent = "Search failed — is oli-web-api reachable?";
     renderGrid(term);
     showToast("Couldn't reach the search backend.");
   }
 }
-
 [document.getElementById('searchInput'), document.getElementById('searchInputMobile')].forEach(input=>{
   if(!input) return;
   input.addEventListener('input', (e)=>{
@@ -1068,28 +1112,368 @@ async function runSearch(term){
     const term = e.target.value.trim();
     searchDebounce = setTimeout(()=> runSearch(term), 300);
   });
+  input.addEventListener('focus', ()=> showView('home'));
 });
-
 document.getElementById('searchNavItem')?.addEventListener('click', ()=> document.getElementById('searchInput').focus());
-document.getElementById('bnSearch')?.addEventListener('click', ()=> document.getElementById('searchInputMobile').focus());
-document.getElementById('bnMic')?.addEventListener('click', ()=> showToast("Voice search isn't available in the web player yet."));
-document.getElementById('bnQueue')?.addEventListener('click', ()=>{
-  document.getElementById('mobileContent').scrollTo({top: document.getElementById('mobileContent').scrollHeight, behavior:'smooth'});
-});
+document.getElementById('bnSearch')?.addEventListener('click', ()=> { showView('home'); document.getElementById('searchInputMobile').focus(); });
 
-// keyboard shortcuts (desktop)
-document.addEventListener('keydown', (e)=>{
-  if(e.target.tagName === 'INPUT') return;
-  if(e.code === 'Space'){ e.preventDefault(); togglePlay(); }
-  if(e.code === 'ArrowRight' && e.shiftKey){ goNext(); }
-  if(e.code === 'ArrowLeft' && e.shiftKey){ goPrev(); }
-  if(e.key === 'l' || e.key === 'L'){ toggleLyrics(); }
-});
+let libTab = 'playlists';
+let openPlaylistId = null;
 
+function renderSidebarPlaylists(){
+  const el = document.getElementById('sidebarPlaylists');
+  el.innerHTML = '';
+  if(state.playlists.length === 0){
+    el.innerHTML = '<div class="playlist-item" style="opacity:.6;">No playlists yet</div>';
+    return;
+  }
+  state.playlists.forEach(p=>{
+    const item = document.createElement('div');
+    item.className = 'playlist-item'; item.textContent = p.name;
+    item.onclick = ()=>{ showView('library'); libTab = 'playlists'; openPlaylistId = p.id; renderLibraryViews(); };
+    el.appendChild(item);
+  });
+}
+
+function libraryTabsHtml(){
+  return `
+    <div class="tab-btn ${libTab==='playlists'?'active':''}" data-tab="playlists">Playlists</div>
+    <div class="tab-btn ${libTab==='favorites'?'active':''}" data-tab="favorites">Favorites</div>
+    <div class="tab-btn ${libTab==='history'?'active':''}" data-tab="history">History</div>`;
+}
+function trackRowHtml(t, idx, extra){
+  return `
+    <div class="idx">${idx}</div>
+    <div class="art-sm ${t.thumbnail ? '' : t.grad}" ${t.thumbnail ? `style="background-image:url('${t.thumbnail}');background-size:cover;background-position:center;"` : ''}></div>
+    <div class="info"><div class="t-title">${t.title}</div><div class="t-artist">${t.artist}${extra?` &middot; ${extra}`:''}</div></div>
+    <div class="row-actions">
+      <button class="fav-toggle ${isFavorite(t.id)?'liked':''}" aria-label="Favorite">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="${isFavorite(t.id)?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 000-7.8z"/></svg>
+      </button>
+    </div>`;
+}
+function renderLibraryContent(container){
+  container.innerHTML = '';
+  if(libTab === 'playlists'){
+    if(openPlaylistId){
+      const pl = state.playlists.find(p=>p.id===openPlaylistId);
+      if(!pl){ openPlaylistId = null; renderLibraryContent(container); return; }
+      const backRow = document.createElement('div');
+      backRow.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:16px;cursor:pointer;color:var(--muted);';
+      backRow.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg><span>All playlists</span>`;
+      backRow.onclick = ()=>{ openPlaylistId = null; renderLibraryViews(); };
+      container.appendChild(backRow);
+
+      const header = document.createElement('div');
+      header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;';
+      header.innerHTML = `<div><div style="font-family:'Fraunces',serif;font-size:19px;font-weight:600;">${pl.name}</div><div style="color:var(--muted);font-size:12.5px;">${pl.tracks.length} track${pl.tracks.length===1?'':'s'}</div></div>
+        <button class="btn btn-danger" data-del-playlist>Delete playlist</button>`;
+      container.appendChild(header);
+      header.querySelector('[data-del-playlist]').onclick = ()=>{
+        state.playlists = state.playlists.filter(p=>p.id!==pl.id);
+        saveState(); openPlaylistId = null; renderSidebarPlaylists(); renderLibraryViews();
+        showToast("Playlist deleted");
+      };
+
+      const list = document.createElement('div'); list.className = 'row-list';
+      if(pl.tracks.length === 0){ list.innerHTML = '<div class="empty-state">No tracks in this playlist yet. Add some from Now Playing.</div>'; }
+      pl.tracks.forEach((t,i)=>{
+        const row = document.createElement('div'); row.className = 'row-item';
+        row.innerHTML = trackRowHtml(t, i+1);
+        row.addEventListener('click', (e)=>{ if(!e.target.closest('.fav-toggle')) playTrackById(t.id, pl.tracks); });
+        row.querySelector('.fav-toggle').onclick = (e)=>{ e.stopPropagation(); toggleFavorite(t); };
+        list.appendChild(row);
+      });
+      container.appendChild(list);
+      return;
+    }
+    const grid = document.createElement('div'); grid.className = 'playlist-grid';
+    const newCard = document.createElement('div'); newCard.className = 'new-playlist-card';
+    newCard.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg><span>New playlist</span>`;
+    newCard.onclick = ()=> promptNewPlaylist();
+    grid.appendChild(newCard);
+    state.playlists.forEach(p=>{
+      const card = document.createElement('div'); card.className = 'playlist-card';
+      const covers = p.tracks.slice(0,4);
+      const coverHtml = covers.length
+        ? covers.map(t=> t.thumbnail ? `<div style="background-image:url('${t.thumbnail}')"></div>` : `<div class="${t.grad}"></div>`).join('')
+        : '<div class="gradient-1"></div><div class="gradient-2"></div><div class="gradient-3"></div><div class="gradient-4"></div>';
+      card.innerHTML = `<div class="playlist-cover">${coverHtml}</div><div class="playlist-name">${p.name}</div><div class="playlist-count">${p.tracks.length} track${p.tracks.length===1?'':'s'}</div>`;
+      card.onclick = ()=>{ openPlaylistId = p.id; renderLibraryViews(); };
+      grid.appendChild(card);
+    });
+    container.appendChild(grid);
+  }
+  else if(libTab === 'favorites'){
+    if(state.favorites.length === 0){ container.innerHTML = '<div class="empty-state">No favorites yet — tap the heart on any track.</div>'; return; }
+    const list = document.createElement('div'); list.className = 'row-list';
+    state.favorites.forEach((t,i)=>{
+      const row = document.createElement('div'); row.className = 'row-item';
+      row.innerHTML = trackRowHtml(t, i+1);
+      row.addEventListener('click', (e)=>{ if(!e.target.closest('.fav-toggle')) playTrackById(t.id, state.favorites); });
+      row.querySelector('.fav-toggle').onclick = (e)=>{ e.stopPropagation(); toggleFavorite(t); };
+      list.appendChild(row);
+    });
+    container.appendChild(list);
+  }
+  else if(libTab === 'history'){
+    if(state.history.length === 0){ container.innerHTML = '<div class="empty-state">Nothing played yet.</div>'; return; }
+    const clearBtn = document.createElement('button');
+    clearBtn.className = 'btn btn-ghost'; clearBtn.style.marginBottom = '16px'; clearBtn.textContent = 'Clear history';
+    clearBtn.onclick = ()=>{ state.history = []; saveState(); renderLibraryViews(); showToast("History cleared"); };
+    container.appendChild(clearBtn);
+    const list = document.createElement('div'); list.className = 'row-list';
+    state.history.forEach((h,i)=>{
+      const when = new Date(h.playedAt).toLocaleString(undefined, {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
+      const row = document.createElement('div'); row.className = 'row-item';
+      row.innerHTML = trackRowHtml(h.track, i+1, when);
+      row.addEventListener('click', (e)=>{ if(!e.target.closest('.fav-toggle')) playTrackById(h.track.id, state.history.map(x=>x.track)); });
+      row.querySelector('.fav-toggle').onclick = (e)=>{ e.stopPropagation(); toggleFavorite(h.track); };
+      list.appendChild(row);
+    });
+    container.appendChild(list);
+  }
+}
+function renderLibraryViews(){
+  [document.getElementById('libTabsDesktop'), document.getElementById('libTabsMobile')].forEach(tabs=>{
+    if(!tabs) return;
+    tabs.innerHTML = libraryTabsHtml();
+    tabs.querySelectorAll('[data-tab]').forEach(btn=>{
+      btn.onclick = ()=>{ libTab = btn.dataset.tab; openPlaylistId = null; renderLibraryViews(); };
+    });
+  });
+  [document.getElementById('libraryContentDesktop'), document.getElementById('libraryContentMobile')].forEach(c=>{
+    if(c) renderLibraryContent(c);
+  });
+}
+function promptNewPlaylist(){
+  const name = prompt("Playlist name?");
+  if(!name || !name.trim()) return;
+  const pl = { id: uid(), name: name.trim(), createdAt: Date.now(), tracks: [] };
+  state.playlists.push(pl);
+  saveState();
+  renderSidebarPlaylists();
+  renderLibraryViews();
+  showToast(`Created "${pl.name}"`);
+}
+document.getElementById('newPlaylistBtnSidebar').onclick = (e)=>{ e.stopPropagation(); promptNewPlaylist(); };
+
+const playlistModal = document.getElementById('playlistModal');
+function openPlaylistModal(track){
+  pendingPlaylistTrack = track;
+  const list = document.getElementById('modalPlaylistList');
+  list.innerHTML = '';
+  if(state.playlists.length === 0){
+    list.innerHTML = '<div style="color:var(--muted);font-size:13.5px;">No playlists yet — create one below.</div>';
+  }
+  state.playlists.forEach(p=>{
+    const already = p.tracks.some(t=>t.id===track.id);
+    const item = document.createElement('div');
+    item.className = 'modal-playlist-item';
+    item.innerHTML = `<span>${already ? '✓' : '+'}</span><span>${p.name}</span>`;
+    item.onclick = ()=>{
+      if(already) p.tracks = p.tracks.filter(t=>t.id!==track.id);
+      else p.tracks.push(track);
+      saveState();
+      showToast(already ? `Removed from ${p.name}` : `Added to ${p.name}`);
+      closePlaylistModal();
+    };
+    list.appendChild(item);
+  });
+  document.getElementById('newPlaylistNameInput').value = '';
+  playlistModal.classList.add('open');
+}
+function closePlaylistModal(){ playlistModal.classList.remove('open'); pendingPlaylistTrack = null; }
+document.getElementById('modalCancelBtn').onclick = closePlaylistModal;
+document.getElementById('modalCreateBtn').onclick = ()=>{
+  const name = document.getElementById('newPlaylistNameInput').value.trim();
+  if(!name){ showToast("Enter a playlist name first."); return; }
+  const pl = { id: uid(), name, createdAt: Date.now(), tracks: pendingPlaylistTrack ? [pendingPlaylistTrack] : [] };
+  state.playlists.push(pl);
+  saveState();
+  renderSidebarPlaylists();
+  showToast(`Created "${name}"` + (pendingPlaylistTrack ? ' and added track' : ''));
+  closePlaylistModal();
+};
+playlistModal.addEventListener('click', (e)=>{ if(e.target === playlistModal) closePlaylistModal(); });
+
+let audioCtx = null, sourceNode = null, filterNodes = [];
+function ensureEqualizerWired(){
+  if(audioCtx) return;
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    sourceNode = audioCtx.createMediaElementSource(audio);
+    filterNodes = EQ_BANDS.map((band, i) => {
+      const f = audioCtx.createBiquadFilter();
+      f.type = band.type; f.frequency.value = band.freq;
+      f.gain.value = state.eqEnabled ? state.eqGains[i] : 0;
+      return f;
+    });
+    let node = sourceNode;
+    filterNodes.forEach(f => { node.connect(f); node = f; });
+    node.connect(audioCtx.destination);
+  } catch(e) {
+    console.error("Web Audio API setup failed:", e);
+  }
+}
+function applyEqGains(){
+  if(!filterNodes.length) return;
+  filterNodes.forEach((f,i)=>{ f.gain.value = state.eqEnabled ? state.eqGains[i] : 0; });
+}
+function eqPanelHtml(){
+  return `
+    <div class="form-row" style="border:none;padding-bottom:20px;">
+      <div><div class="label">Enable equalizer</div><div class="desc">Applies live to whatever's currently playing.</div></div>
+      <div class="toggle ${state.eqEnabled?'on':''}" id="eqEnableToggle"></div>
+    </div>
+    <div class="eq-bands">
+      ${EQ_BANDS.map((b,i)=>`
+        <div class="eq-band">
+          <div class="gain-label" id="eqGainLabel-${i}">${state.eqGains[i]>0?'+':''}${state.eqGains[i]}dB</div>
+          <input type="range" min="-12" max="12" value="${state.eqGains[i]}" data-band="${i}">
+          <div class="freq-label">${b.freq>=1000 ? (b.freq/1000)+'k' : b.freq}Hz</div>
+        </div>`).join('')}
+    </div>
+    <div class="eq-presets">
+      <button class="btn btn-ghost" data-preset="flat">Flat</button>
+      <button class="btn btn-ghost" data-preset="bass">Bass Boost</button>
+      <button class="btn btn-ghost" data-preset="vocal">Vocal Boost</button>
+      <button class="btn btn-ghost" data-preset="treble">Treble Boost</button>
+    </div>
+    <div class="lt-note">Equalizer uses the Web Audio API directly in your browser — it's applied to this tab's playback only and won't affect the Android or Desktop apps.</div>
+  `;
+}
+const EQ_PRESETS = { flat:[0,0,0,0,0], bass:[8,5,0,-2,-3], vocal:[-3,-1,4,4,-1], treble:[-3,-2,0,4,7] };
+function renderEqualizerViews(){
+  [document.getElementById('eqPanelDesktop'), document.getElementById('eqPanelMobile')].forEach(panel=>{
+    if(!panel) return;
+    panel.innerHTML = eqPanelHtml();
+    panel.querySelector('#eqEnableToggle').onclick = ()=>{
+      state.eqEnabled = !state.eqEnabled; saveState(); applyEqGains(); renderEqualizerViews();
+    };
+    panel.querySelectorAll('input[type="range"]').forEach(slider=>{
+      slider.addEventListener('input', (e)=>{
+        const i = Number(e.target.dataset.band);
+        state.eqGains[i] = Number(e.target.value);
+        saveState(); applyEqGains();
+        const label = panel.querySelector(`#eqGainLabel-${i}`);
+        if(label) label.textContent = (state.eqGains[i]>0?'+':'') + state.eqGains[i] + 'dB';
+      });
+    });
+    panel.querySelectorAll('[data-preset]').forEach(btn=>{
+      btn.onclick = ()=>{
+        state.eqGains = [...EQ_PRESETS[btn.dataset.preset]];
+        state.eqEnabled = true;
+        saveState(); applyEqGains(); renderEqualizerViews();
+        showToast(`Applied "${btn.textContent}" preset`);
+      };
+    });
+  });
+}
+
+let ltSocket = null;
+let ltStatus = 'disconnected';
+let ltErrorMsg = '';
+function listenPanelHtml(){
+  const statusText = { disconnected:"Not connected", connecting:"Connecting…", connected:"Connected", error:"Connection failed" }[ltStatus];
+  return `
+    <div class="lt-status ${ltStatus}"><div class="lt-dot"></div><div>${statusText}${ltStatus==='error' && ltErrorMsg ? ' — ' + ltErrorMsg : ''}</div></div>
+    <div class="form-row"><div style="flex:1;"><div class="label">Server URL</div><div class="desc">Your deployed oli-server WebSocket endpoint.</div></div></div>
+    <input type="text" id="ltServerInput" value="${state.listenServerUrl}" style="width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;color:var(--ink);font-size:13.5px;outline:none;margin:8px 0 20px;">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
+      <button class="btn" id="ltConnectBtn">${ltStatus==='connected' ? 'Disconnect' : 'Connect'}</button>
+    </div>
+    <div class="lt-note">
+      <strong style="color:var(--ink);">Experimental.</strong> This opens a real WebSocket connection to your <code>oli-server</code> deployment to confirm it's reachable. Full session sync (matching the Android app's exact message protocol, which uses Protocol Buffers) hasn't been verified end-to-end from this environment — treat playback sync here as best-effort, not guaranteed compatible yet.
+    </div>
+  `;
+}
+function renderListenTogetherViews(){
+  [document.getElementById('listenPanelDesktop'), document.getElementById('listenPanelMobile')].forEach(panel=>{
+    if(!panel) return;
+    panel.innerHTML = listenPanelHtml();
+    panel.querySelector('#ltServerInput').addEventListener('change', (e)=>{ state.listenServerUrl = e.target.value.trim(); saveState(); });
+    panel.querySelector('#ltConnectBtn').onclick = ()=>{ ltStatus === 'connected' ? ltDisconnect() : ltConnect(); };
+  });
+}
+function ltSetStatus(s, err){ ltStatus = s; ltErrorMsg = err || ''; renderListenTogetherViews(); }
+function ltConnect(){
+  const url = state.listenServerUrl.trim();
+  if(!url){ showToast("Enter a server URL first."); return; }
+  ltSetStatus('connecting');
+  try {
+    ltSocket = new WebSocket(url);
+    ltSocket.onopen = ()=>{ ltSetStatus('connected'); showToast("Connected to Listen Together server"); };
+    ltSocket.onerror = ()=>{ ltSetStatus('error', 'could not reach server'); };
+    ltSocket.onclose = ()=>{ if(ltStatus !== 'error') ltSetStatus('disconnected'); };
+  } catch(e){ ltSetStatus('error', e.message); }
+}
+function ltDisconnect(){ if(ltSocket){ ltSocket.close(); ltSocket = null; } ltSetStatus('disconnected'); }
+
+function settingsPanelHtml(){
+  return `
+    <div class="form-row"><div><div class="label">Backend API URL</div><div class="desc">Your deployed oli-web-api URL. Leave blank to stay in demo mode.</div></div></div>
+    <input type="text" id="apiBaseInput" placeholder="https://your-oli-web-api.example.com" value="${state.apiBase}" style="width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;color:var(--ink);font-size:13.5px;outline:none;margin:8px 0 20px;">
+    <div class="form-row">
+      <div><div class="label">Accent color</div><div class="desc">Changes the highlight color throughout the app.</div></div>
+      <div class="swatches" id="accentSwatches">
+        ${Object.entries(ACCENTS).map(([name,hex])=>`<div class="swatch ${state.accent===name?'active':''}" data-accent="${name}" style="background:${hex};"></div>`).join('')}
+      </div>
+    </div>
+    <div class="form-row">
+      <div><div class="label">Playback quality</div><div class="desc">Higher quality uses more data. Not yet wired to a real quality selector on the backend.</div></div>
+      <select id="qualitySelect"><option>Auto</option><option>High</option><option>Low</option></select>
+    </div>
+    <div class="form-row">
+      <div><div class="label">Clear library data</div><div class="desc">Removes all playlists, favorites, and history from this browser. Can't be undone.</div></div>
+      <button class="btn btn-danger" id="clearDataBtn">Clear</button>
+    </div>
+    <div class="form-row">
+      <div><div class="label">About</div><div class="desc">Oli is a rebranded fork of Echo Music by Aditya Yadav, GPL-3.0 licensed.</div></div>
+      <a href="info.html" class="btn btn-ghost">About Oli</a>
+    </div>
+  `;
+}
+function renderSettingsViews(){
+  [document.getElementById('settingsPanelDesktop'), document.getElementById('settingsPanelMobile')].forEach(panel=>{
+    if(!panel) return;
+    panel.innerHTML = settingsPanelHtml();
+    panel.querySelector('#apiBaseInput').addEventListener('change', (e)=>{
+      state.apiBase = e.target.value.trim();
+      API_BASE = state.apiBase;
+      saveState();
+      showToast(API_BASE ? "Backend connected" : "Switched to demo mode");
+      liveResults = null;
+      renderGrid(currentSearchTerm());
+    });
+    panel.querySelectorAll('[data-accent]').forEach(sw=>{
+      sw.onclick = ()=>{ state.accent = sw.dataset.accent; saveState(); applyAccent(); renderSettingsViews(); };
+    });
+    panel.querySelector('#clearDataBtn').onclick = ()=>{
+      if(!confirm("Clear all playlists, favorites, and history? This can't be undone.")) return;
+      state.playlists = []; state.favorites = []; state.history = [];
+      saveState(); renderSidebarPlaylists(); renderLibraryViews(); renderGrid(currentSearchTerm());
+      showToast("Library data cleared");
+    };
+  });
+}
+function applyAccent(){ document.documentElement.style.setProperty('--amber', ACCENTS[state.accent] || ACCENTS.amber); }
+
+applyAccent();
 renderStaticSections();
+renderSidebarPlaylists();
 renderGrid();
 renderQueue();
 renderLyrics(false);
+showView('home');
+
+document.addEventListener('keydown', (e)=>{
+  if(e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  if(e.code === 'Space'){ e.preventDefault(); togglePlay(); }
+  if(e.code === 'ArrowRight' && e.shiftKey){ goNext(); }
+  if(e.code === 'ArrowLeft' && e.shiftKey){ goPrev(); }
+  if(e.key === 'l' || e.key === 'L'){ toggleLyricsPanel(); }
+});
 </script>
 </body>
 </html>
