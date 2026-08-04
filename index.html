@@ -2,1478 +2,430 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Oli — Music, without the noise.</title>
-<meta name="description" content="Oli is a free, ad-free music player with synced lyrics and offline playback.">
+<meta name="description" content="Oli is a free, ad-free music player with synced lyrics and offline playback. Open source. No subscriptions, no interruptions.">
 <meta name="theme-color" content="#12101B">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Oli — Music, without the noise.">
+<meta property="og:description" content="Free, ad-free music with synced lyrics and offline playback. Open source.">
+<meta property="og:image" content="og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Oli — Music, without the noise.">
+<meta name="twitter:description" content="Free, ad-free music with synced lyrics and offline playback.">
+<meta name="twitter:image" content="og-image.png">
+
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#12101B; --surface:#1C1830; --surface-2:#241f3d; --surface-3:#2c2650;
-    --amber:#F2A93B; --teal:#3FBFAE; --ink:#F5F1EA; --muted:#8B84A6; --line:rgba(245,241,234,0.1);
-    --player-h: 88px;
+    --bg:#12101B; --surface:#1C1830; --surface-2:#241f3d;
+    --amber:#F2A93B; --teal:#3FBFAE; --violet:#7A5CFA; --ink:#F5F1EA; --muted:#8B84A6;
+    --line: rgba(245,241,234,0.1);
   }
   *{box-sizing:border-box; margin:0; padding:0;}
-  html,body{height:100%;}
-  body{ background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif; display:flex; flex-direction:column; overflow:hidden; }
-  ::-webkit-scrollbar{width:8px; height:8px;} ::-webkit-scrollbar-thumb{background:var(--surface-3); border-radius:4px;}
-  .mono{font-family:'IBM Plex Mono',monospace;}
-  button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit;}
-  button:disabled{opacity:.4; cursor:not-allowed;}
-  a{color:inherit; text-decoration:none;}
-  input, select{font-family:inherit;}
-  .mobile-only{display:none;}
-  .desktop-only{display:flex;}
-  .hidden{display:none !important;}
+  html{scroll-behavior:smooth;}
+  body{ background:var(--bg); color:var(--ink); font-family:'Inter', sans-serif; line-height:1.5; overflow-x:hidden; }
+  a{color:inherit;}
+  .wrap{max-width:1140px; margin:0 auto; padding:0 28px;}
+  .mono{font-family:'IBM Plex Mono', monospace; letter-spacing:0.04em;}
+  ::selection{background:var(--amber); color:#1a1508;}
 
-  /* ===================== SHARED COMPONENTS ===================== */
-  .empty-state{ text-align:center; padding:40px 20px; color:var(--muted); font-size:14px; }
-  .section-title{font-family:'Fraunces',serif; font-weight:500; font-size:22px; margin-bottom:4px;}
-  .section-sub{color:var(--muted); font-size:13.5px; margin-bottom:20px;}
-
-  .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:10px 18px; border-radius:100px; font-size:13.5px; font-weight:500; background:var(--amber); color:#1a1508; transition:transform .15s, box-shadow .15s; }
-  .btn:hover{transform:translateY(-1px); box-shadow:0 6px 20px rgba(242,169,59,0.25);}
-  .btn-ghost{background:transparent; color:var(--ink); border:1px solid var(--line);}
-  .btn-ghost:hover{background:var(--surface); box-shadow:none; transform:none;}
-  .btn-danger{background:#3a1f24; color:#ff8a8a; border:1px solid #5c2b30;}
-
-  .card{background:var(--surface); border:1px solid var(--line); border-radius:14px;}
-
-  .toggle{ position:relative; width:42px; height:24px; background:var(--surface-3); border-radius:100px; flex-shrink:0; transition:background .2s; }
-  .toggle::after{ content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:var(--ink); transition:transform .2s; }
-  .toggle.on{background:var(--amber);}
-  .toggle.on::after{transform:translateX(18px); background:#1a1508;}
-
-  .form-row{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 0; border-bottom:1px solid var(--line);}
-  .form-row:last-child{border-bottom:none;}
-  .form-row .label{font-size:14px; font-weight:500;}
-  .form-row .desc{font-size:12.5px; color:var(--muted); margin-top:2px;}
-  .form-row input[type="text"], .form-row select{
-    background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:9px 12px;
-    color:var(--ink); font-size:13.5px; outline:none;
-  }
-  .form-row input[type="text"]:focus, .form-row select:focus{border-color:var(--amber);}
-
-  .swatches{display:flex; gap:10px;}
-  .swatch{width:26px; height:26px; border-radius:50%; cursor:pointer; border:2px solid transparent; transition:border .15s;}
-  .swatch.active{border-color:var(--ink);}
-
-  .view-header-mobile{display:none;}
-
-  svg{display:block;}
-  .gradient-1{background:linear-gradient(135deg,#F2A93B,#3FBFAE);}
-  .gradient-2{background:linear-gradient(135deg,#7A5CFA,#F2A93B);}
-  .gradient-3{background:linear-gradient(135deg,#3FBFAE,#7A5CFA);}
-  .gradient-4{background:linear-gradient(135deg,#E8637B,#F2A93B);}
-  .gradient-5{background:linear-gradient(135deg,#3FBFAE,#E8637B);}
-  .gradient-6{background:linear-gradient(135deg,#F2A93B,#7A5CFA);}
-
-  /* ===================== DESKTOP LAYOUT ===================== */
-  .app{flex:1; display:flex; min-height:0;}
-  .sidebar{ width:230px; flex-shrink:0; background:var(--surface); border-right:1px solid var(--line); display:flex; flex-direction:column; padding:20px 14px; overflow-y:auto; }
-  .logo-link{padding:0 10px 22px; display:block;}
-  .logo{font-family:'Fraunces',serif; font-size:22px; font-weight:600;}
+  header{ position:sticky; top:0; z-index:100; background:rgba(18,16,27,0.85); backdrop-filter: blur(10px); border-bottom:1px solid var(--line); }
+  nav{display:flex; align-items:center; justify-content:space-between; padding:18px 28px; max-width:1140px; margin:0 auto;}
+  .logo{font-family:'Fraunces', serif; font-size:22px; font-weight:600; letter-spacing:-0.01em; text-decoration:none; color:var(--ink); display:flex; align-items:center; gap:8px;}
   .logo span{color:var(--amber);}
-  .nav-item{ display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:10px; font-size:14px; color:var(--muted); font-weight:500; transition:all .15s; cursor:pointer; }
-  .nav-item:hover{background:var(--surface-2); color:var(--ink);}
-  .nav-item.active{background:var(--surface-2); color:var(--amber);}
-  .nav-icon{width:18px; height:18px; flex-shrink:0;}
-  .nav-section{margin-top:22px; padding:0 12px 8px; font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); opacity:.7; display:flex; justify-content:space-between; align-items:center;}
-  .nav-section button{color:var(--muted); font-size:15px;}
-  .nav-section button:hover{color:var(--amber);}
-  .playlist-item{padding:8px 12px; font-size:13.5px; color:var(--muted); border-radius:8px; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .playlist-item:hover{background:var(--surface-2); color:var(--ink);}
-  .sidebar-foot{margin-top:auto; padding:12px 10px 0;}
-  .back-link{font-size:12.5px; color:var(--muted); display:flex; align-items:center; gap:6px;}
-  .back-link:hover{color:var(--ink);}
+  .nav-links{display:flex; gap:32px; font-size:14px; color:var(--muted); align-items:center;}
+  .nav-links a{text-decoration:none; transition:color .2s;}
+  .nav-links a:hover{color:var(--ink);}
+  .nav-cta{display:flex; gap:10px; align-items:center;}
+  .btn{ display:inline-flex; align-items:center; gap:8px; padding:11px 22px; border-radius:100px; font-size:14px; font-weight:600; text-decoration:none; background:var(--amber); color:#1a1508; transition:transform .15s ease, box-shadow .15s ease; border:none; cursor:pointer; }
+  .btn:hover{transform:translateY(-1px); box-shadow:0 8px 24px rgba(242,169,59,0.3);}
+  .btn-ghost{background:transparent; color:var(--ink); border:1px solid var(--line);}
+  .btn-ghost:hover{background:var(--surface); box-shadow:none;}
+  .btn-sm{padding:9px 18px; font-size:13px;}
 
-  .main{flex:1; display:flex; flex-direction:column; min-width:0;}
-  .topbar{ display:flex; align-items:center; gap:16px; padding:16px 32px; border-bottom:1px solid var(--line); }
-  .search{ flex:1; max-width:480px; display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--line); border-radius:100px; padding:10px 18px; }
-  .search input{ background:none; border:none; outline:none; color:var(--ink); font-size:14px; width:100%; }
-  .search input::placeholder{color:var(--muted);}
-  .search svg{flex-shrink:0; color:var(--muted);}
+  .menu-toggle{display:none; background:none; border:none; color:var(--ink); cursor:pointer; padding:6px;}
+  .mobile-menu{ display:none; position:fixed; inset:0; z-index:99; background:var(--bg); flex-direction:column; padding:100px 32px 40px; gap:8px; }
+  .mobile-menu.open{display:flex;}
+  .mobile-menu a{ padding:16px 0; font-size:20px; border-bottom:1px solid var(--line); text-decoration:none; color:var(--ink); font-family:'Fraunces',serif; }
+  .mobile-menu .btn{ margin-top:20px; text-align:center; justify-content:center; }
+  @media (max-width:820px){ .nav-links{display:none;} .menu-toggle{display:block;} .nav-cta .btn-ghost{display:none;} }
 
-  .content{flex:1; overflow-y:auto; padding:26px 32px 40px;}
-  .view-panel{display:none;}
-  .view-panel.active{display:block;}
+  /* ===== hero ===== */
+  .hero{ position:relative; padding:100px 0 70px; overflow:hidden; }
+  .hero-grid{ display:grid; grid-template-columns:1.1fr 0.9fr; gap:60px; align-items:center; }
+  @media (max-width:900px){ .hero-grid{grid-template-columns:1fr; gap:50px;} }
 
-  .chip-row{display:flex; gap:10px; overflow-x:auto; padding-bottom:8px; margin-bottom:28px;}
-  .chip-row::-webkit-scrollbar{display:none;}
-  .chip{ flex-shrink:0; padding:9px 18px; border-radius:100px; background:var(--surface); border:1px solid var(--line); font-size:13.5px; color:var(--ink); cursor:pointer; white-space:nowrap; transition:all .15s; }
-  .chip:hover, .chip.active{background:var(--amber); color:#1a1508; border-color:var(--amber);}
+  .kicker{ font-size:13px; color:var(--teal); text-transform:uppercase; letter-spacing:0.14em; margin-bottom:22px; display:inline-flex; align-items:center; gap:8px; }
+  .kicker::before{ content:''; width:16px; height:1px; background:var(--teal); }
+  h1{ font-family:'Fraunces', serif; font-weight:600; font-size:clamp(40px, 6vw, 68px); line-height:1.03; letter-spacing:-0.02em; margin-bottom:22px; }
+  h1 em{font-style:italic; color:var(--amber); font-weight:500;}
+  .sub{ font-size:18px; color:var(--muted); max-width:460px; margin-bottom:36px; }
+  .hero-cta{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:20px;}
+  .hero-note{font-size:13px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
 
-  .genre-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:36px; }
-  .genre-card{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px; cursor:pointer; transition:all .15s; font-family:'Fraunces',serif; font-weight:500; font-size:16px; }
-  .genre-card:hover{background:var(--surface-2); transform:translateY(-2px);}
-  @media (max-width:1000px){ .genre-grid{grid-template-columns:repeat(2,1fr);} }
+  .stats{ display:flex; gap:44px; margin-top:56px; flex-wrap:wrap; }
+  .stat .num{font-family:'Fraunces',serif; font-size:30px; font-weight:600; color:var(--amber); line-height:1;}
+  .stat .label{font-size:12px; color:var(--muted); margin-top:6px; text-transform:uppercase; letter-spacing:.06em;}
 
-  .trend-scroll{display:flex; gap:16px; overflow-x:auto; padding-bottom:12px; margin-bottom:36px;}
-  .trend-scroll::-webkit-scrollbar{display:none;}
-  .trend-card{width:150px; flex-shrink:0; cursor:pointer;}
-  .trend-art{width:150px; height:150px; border-radius:12px; margin-bottom:10px; position:relative; overflow:hidden;}
-  .trend-art .playbtn{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(18,16,27,0.35); opacity:0; transition:opacity .15s; }
-  .trend-card:hover .playbtn{opacity:1;}
-
-  .track-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:18px; margin-bottom:36px; }
-  .track-card{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px; cursor:pointer; transition:transform .15s, background .15s; position:relative; }
-  .track-card:hover{transform:translateY(-3px); background:var(--surface-2);}
-  .track-card.playing{outline:2px solid var(--amber);}
-  .art{ width:100%; aspect-ratio:1; border-radius:10px; margin-bottom:12px; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
-  .art .playbtn{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(18,16,27,0.35); opacity:0; transition:opacity .15s; }
-  .track-card:hover .playbtn{opacity:1;}
-  .art .eq-mini{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:3px; background:rgba(18,16,27,0.45); }
-  .eq-mini span{width:3px; background:var(--amber); border-radius:2px; animation:eqbounce .9s ease-in-out infinite;}
-  .eq-mini span:nth-child(2){animation-delay:.15s;} .eq-mini span:nth-child(3){animation-delay:.3s;}
-  @keyframes eqbounce{0%,100%{height:6px;}50%{height:20px;}}
-  .playbtn-circle{ width:44px; height:44px; border-radius:50%; background:var(--amber); color:#1a1508; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 20px rgba(0,0,0,.4); }
-  .t-title{font-size:14px; font-weight:600; margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .t-artist{font-size:12.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .card-fav-btn{position:absolute; top:20px; right:20px; z-index:2; color:#fff; opacity:0; transition:opacity .15s; filter:drop-shadow(0 1px 3px rgba(0,0,0,.6));}
-  .track-card:hover .card-fav-btn, .card-fav-btn.liked{opacity:1;}
-  .card-fav-btn.liked{color:var(--amber);}
-
-  .row-list{display:flex; flex-direction:column; gap:2px;}
-  .row-item{ display:flex; align-items:center; gap:14px; padding:9px 12px; border-radius:10px; cursor:pointer; }
-  .row-item:hover{background:var(--surface);}
-  .row-item.playing{background:var(--surface-2);}
-  .row-item .idx{width:22px; text-align:center; color:var(--muted); font-size:13px; flex-shrink:0;}
-  .row-item .art-sm{width:40px; height:40px; border-radius:6px; flex-shrink:0;}
-  .row-item .info{flex:1; min-width:0;}
-  .row-item .dur{color:var(--muted); font-size:12.5px; flex-shrink:0;}
-  .row-item .row-actions{display:flex; gap:4px; flex-shrink:0;}
-  .row-item .row-actions button{color:var(--muted); padding:6px;}
-  .row-item .row-actions button:hover{color:var(--ink);}
-  .row-item .row-actions button.liked{color:var(--amber);}
-
-  .lyrics-panel{ width:340px; flex-shrink:0; background:var(--surface); border-left:1px solid var(--line); display:none; flex-direction:column; padding:24px 22px; overflow-y:auto; }
-  .lyrics-panel.open{display:flex;}
-  .lyrics-panel h3{font-family:'Fraunces',serif; font-weight:500; font-size:17px; margin-bottom:18px; display:flex; justify-content:space-between; align-items:center;}
-  .lyric-line{ font-size:15.5px; color:var(--muted); padding:7px 0; line-height:1.5; transition:color .25s, transform .25s; }
-  .lyric-line.active{color:var(--ink); font-weight:600; transform:scale(1.03); transform-origin:left;}
-  .lyrics-empty{color:var(--muted); font-size:13.5px; text-align:center; padding:30px 10px;}
-
-  .player-bar{ height:var(--player-h); flex-shrink:0; background:var(--surface); border-top:1px solid var(--line); display:flex; align-items:center; padding:0 20px; gap:20px; position:relative; }
-  .now-playing{display:flex; align-items:center; gap:12px; width:260px; min-width:0;}
-  .np-art{width:56px; height:56px; border-radius:8px; flex-shrink:0; position:relative; background-size:cover; background-position:center;}
-  .np-art.loading::after{ content:''; position:absolute; inset:0; border-radius:8px; border:2px solid rgba(255,255,255,0.25); border-top-color:var(--amber); animation:spin .8s linear infinite; }
-  @keyframes spin{to{transform:rotate(360deg);}}
-  .np-info{min-width:0;}
-  .np-title{font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .np-artist{font-size:12.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .like-btn{color:var(--muted); flex-shrink:0;}
-  .like-btn.liked{color:var(--amber);}
-
-  .transport{flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; max-width:640px; margin:0 auto;}
-  .controls{display:flex; align-items:center; gap:20px;}
-  .ctrl-btn{color:var(--ink); opacity:.85; transition:opacity .15s, transform .15s;}
-  .ctrl-btn:hover{opacity:1; transform:scale(1.08);}
-  .ctrl-btn.active-toggle{color:var(--amber); opacity:1;}
-  .play-main{ width:38px; height:38px; border-radius:50%; background:var(--amber); color:#1a1508; display:flex; align-items:center; justify-content:center; }
-  .play-main:disabled{background:var(--surface-3); color:var(--muted);}
-  .seek-row{display:flex; align-items:center; gap:10px; width:100%;}
-  .time{font-size:11px; color:var(--muted); width:36px; font-family:'IBM Plex Mono',monospace; flex-shrink:0;}
-  .time.right{text-align:right;}
-  .seek{ flex:1; -webkit-appearance:none; height:4px; border-radius:2px; background:var(--surface-3); outline:none; cursor:pointer; }
-  .seek::-webkit-slider-thumb{ -webkit-appearance:none; width:12px; height:12px; border-radius:50%; background:var(--amber); opacity:0; transition:opacity .15s; }
-  .seek:hover::-webkit-slider-thumb{opacity:1;}
-  .seek:disabled{cursor:default;}
-
-  .right-controls{width:260px; display:flex; align-items:center; justify-content:flex-end; gap:16px;}
-  .lyrics-toggle{ display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); padding:6px 12px; border-radius:100px; border:1px solid var(--line); }
-  .lyrics-toggle.active{color:var(--amber); border-color:var(--amber);}
-  .vol-row{display:flex; align-items:center; gap:8px; width:110px;}
-  .vol{ flex:1; -webkit-appearance:none; height:4px; border-radius:2px; background:var(--surface-3); outline:none; cursor:pointer; }
-  .vol::-webkit-slider-thumb{-webkit-appearance:none; width:10px; height:10px; border-radius:50%; background:var(--ink);}
-
-  .toast{ position:fixed; bottom:calc(var(--player-h) + 20px); left:50%; transform:translateX(-50%) translateY(20px); background:var(--surface-3); border:1px solid var(--line); padding:12px 20px; border-radius:10px; font-size:13px; opacity:0; pointer-events:none; transition:all .25s ease; z-index:400; max-width:90vw; text-align:center; }
-  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
-
-  .tab-row{display:flex; gap:8px; margin-bottom:24px; border-bottom:1px solid var(--line);}
-  .tab-btn{padding:10px 4px; margin-right:20px; color:var(--muted); font-size:14px; font-weight:500; border-bottom:2px solid transparent; position:relative; top:1px; cursor:pointer;}
-  .tab-btn.active{color:var(--ink); border-bottom-color:var(--amber);}
-  .playlist-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:18px;}
-  .playlist-card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px; cursor:pointer; transition:all .15s;}
-  .playlist-card:hover{background:var(--surface-2); transform:translateY(-2px);}
-  .playlist-cover{width:100%; aspect-ratio:1; border-radius:10px; margin-bottom:12px; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; overflow:hidden; background:var(--surface-3);}
-  .playlist-cover div{background-size:cover; background-position:center;}
-  .playlist-name{font-size:14px; font-weight:600; margin-bottom:2px;}
-  .playlist-count{font-size:12px; color:var(--muted);}
-  .new-playlist-card{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; aspect-ratio:1; border:2px dashed var(--line); border-radius:14px; cursor:pointer; color:var(--muted); }
-  .new-playlist-card:hover{border-color:var(--amber); color:var(--amber);}
-
-  .modal-backdrop{position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:500; display:none; align-items:center; justify-content:center; padding:20px;}
-  .modal-backdrop.open{display:flex;}
-  .modal{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:24px; width:100%; max-width:380px;}
-  .modal h3{font-family:'Fraunces',serif; font-size:18px; margin-bottom:16px;}
-  .modal input[type="text"]{ width:100%; background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:10px 14px; color:var(--ink); font-size:14px; outline:none; margin-bottom:16px; }
-  .modal input:focus{border-color:var(--amber);}
-  .modal-playlist-list{max-height:220px; overflow-y:auto; margin-bottom:16px;}
-  .modal-playlist-item{display:flex; align-items:center; gap:10px; padding:10px 4px; cursor:pointer; font-size:14px;}
-  .modal-playlist-item:hover{color:var(--amber);}
-  .modal-actions{display:flex; gap:10px; justify-content:flex-end;}
-
-  .eq-panel{max-width:640px;}
-  .eq-bands{display:flex; justify-content:space-between; align-items:flex-end; gap:14px; height:220px; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:24px; margin-bottom:20px;}
-  .eq-band{display:flex; flex-direction:column; align-items:center; gap:10px; flex:1; height:100%;}
-  .eq-band input[type="range"]{ -webkit-appearance:slider-vertical; width:6px; flex:1; background:var(--surface-3); border-radius:3px; accent-color:var(--amber); cursor:pointer; }
-  .eq-band .freq-label{font-size:11px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
-  .eq-band .gain-label{font-size:11px; color:var(--ink); font-family:'IBM Plex Mono',monospace;}
-  .eq-presets{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px;}
-
-  .lt-status{display:flex; align-items:center; gap:10px; padding:16px 18px; border-radius:12px; margin-bottom:20px; font-size:14px;}
-  .lt-status.disconnected{background:var(--surface); border:1px solid var(--line);}
-  .lt-status.connecting{background:#2a2410; border:1px solid #4a3f1a; color:#f2c94c;}
-  .lt-status.connected{background:#12271f; border:1px solid #1e4a38; color:#3fbfae;}
-  .lt-status.error{background:#2a1414; border:1px solid #4a1e1e; color:#ff8a8a;}
-  .lt-dot{width:9px; height:9px; border-radius:50%; background:currentColor; flex-shrink:0;}
-  .lt-note{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 18px; font-size:13px; color:var(--muted); line-height:1.6; margin-top:24px;}
-
-  @media (max-width:760px){
-    .desktop-only{display:none !important;}
-    .mobile-only{display:flex;}
-    body{overflow:auto;}
-
-    .mobile-topbar{ display:flex; align-items:center; justify-content:space-between; padding:16px 18px; position:sticky; top:0; z-index:50; background:var(--bg); }
-    .mobile-topbar .logo{font-size:22px;}
-    .mobile-icons{display:flex; gap:6px;}
-    .icon-btn{color:var(--muted); padding:8px; border-radius:8px;}
-    .icon-btn:hover{color:var(--ink); background:var(--surface);}
-
-    .mobile-search{ margin:0 18px 18px; display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--line); border-radius:100px; padding:11px 18px; }
-    .mobile-search input{ background:none; border:none; outline:none; color:var(--ink); font-size:14px; width:100%; }
-    .mobile-search svg{color:var(--muted); flex-shrink:0;}
-
-    .mobile-content{ flex:1; overflow-y:auto; padding:0 18px calc(var(--player-h) + 80px); }
-    .mobile-content h2{font-family:'Fraunces',serif; font-weight:500; font-size:19px; margin:22px 0 12px; display:flex; justify-content:space-between; align-items:center;}
-    .mobile-content h2 .arrow{color:var(--muted); font-size:16px;}
-
-    .chip-row{margin-bottom:4px;}
-    .genre-grid{grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:8px;}
-    .genre-card{padding:16px; font-size:14.5px;}
-    .trend-scroll{margin-bottom:8px;}
-    .trend-card{width:130px;}
-    .trend-art{width:130px; height:130px;}
-    .track-grid{grid-template-columns:repeat(2,1fr); gap:12px;}
-    .playlist-grid{grid-template-columns:repeat(2,1fr); gap:12px;}
-
-    .view-header-mobile{ display:flex; align-items:center; gap:14px; padding:16px 18px 6px; position:sticky; top:0; background:var(--bg); z-index:50; }
-    .view-header-mobile button{color:var(--ink); padding:4px;}
-    .view-header-mobile .title{font-family:'Fraunces',serif; font-size:19px; font-weight:500;}
-
-    .eq-bands{padding:18px 14px; gap:8px;}
-
-    .bottom-nav{ position:fixed; left:0; right:0; bottom:0; z-index:60; background:var(--surface); border-top:1px solid var(--line); display:flex; align-items:center; justify-content:space-around; padding:10px 0 max(10px, env(safe-area-inset-bottom)); }
-    .bn-item{ display:flex; flex-direction:column; align-items:center; gap:3px; color:var(--muted); font-size:10.5px; padding:4px 12px; cursor:pointer; }
-    .bn-item.active{color:var(--amber);}
-    .bn-item svg{width:22px; height:22px;}
-
-    .mini-player{ position:fixed; left:12px; right:12px; z-index:55; bottom:calc(64px + env(safe-area-inset-bottom)); background:var(--surface-2); border:1px solid var(--line); border-radius:16px; display:flex; align-items:center; gap:12px; padding:8px 10px 8px 8px; box-shadow:0 12px 30px -10px rgba(0,0,0,.5); }
-    .mini-art{width:42px; height:42px; border-radius:9px; flex-shrink:0; background-size:cover; background-position:center;}
-    .mini-info{flex:1; min-width:0;}
-    .mini-title{font-size:13.5px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-    .mini-artist{font-size:11.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-    .mini-controls{display:flex; align-items:center; gap:4px;}
-    .mini-play{width:34px; height:34px; border-radius:50%; background:var(--amber); color:#1a1508; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
-    .mini-seek-track{position:absolute; left:8px; right:8px; bottom:2px; height:2px; background:var(--surface-3); border-radius:2px; overflow:hidden;}
-    .mini-seek-fill{height:100%; background:var(--amber); width:0%;}
+  /* ===== vinyl record visual ===== */
+  .vinyl-stage{ position:relative; display:flex; align-items:center; justify-content:center; height:440px; }
+  .vinyl-glow{ position:absolute; width:380px; height:380px; border-radius:50%; background:radial-gradient(circle, rgba(242,169,59,0.25), transparent 70%); filter:blur(20px); }
+  .vinyl{ position:relative; width:340px; height:340px; border-radius:50%; background:
+      repeating-radial-gradient(circle at center, #0d0b14 0px, #0d0b14 2px, #17131f 3px, #17131f 4px);
+    box-shadow: 0 30px 80px -20px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(255,255,255,0.04);
+    animation: spin-vinyl 8s linear infinite;
   }
+  @keyframes spin-vinyl{ from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+  .vinyl-label{ position:absolute; inset:0; margin:auto; width:130px; height:130px; border-radius:50%; background:linear-gradient(135deg,var(--amber),var(--teal)); display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px rgba(0,0,0,0.4); }
+  .vinyl-label-inner{ font-family:'Fraunces',serif; font-weight:700; font-size:20px; color:#1a1508; }
+  .vinyl-hole{ position:absolute; inset:0; margin:auto; width:14px; height:14px; border-radius:50%; background:var(--bg); box-shadow:0 0 0 3px rgba(0,0,0,0.3); }
+  .tonearm{ position:absolute; top:-10px; right:20px; width:150px; height:150px; transform-origin:130px 20px; animation:tonearm-drop 1.2s ease-out .3s both; }
+  @keyframes tonearm-drop{ from{transform:rotate(-25deg);} to{transform:rotate(8deg);} }
+  @media (prefers-reduced-motion: reduce){ .vinyl{animation:none;} .tonearm{animation:none; transform:rotate(8deg);} }
+  @media (max-width:900px){ .vinyl-stage{height:320px;} .vinyl{width:260px;height:260px;} .vinyl-label{width:100px;height:100px;} .tonearm{display:none;} }
 
-  .np-sheet{ position:fixed; inset:0; z-index:300; background:var(--bg); display:flex; flex-direction:column; padding:20px 24px calc(30px + env(safe-area-inset-bottom)); transform:translateY(100%); transition:transform .3s cubic-bezier(.32,.72,0,1); }
-  .np-sheet.open{transform:translateY(0);}
-  .sheet-topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:30px;}
-  .sheet-topbar button{color:var(--ink); padding:6px;}
-  .sheet-label{font-size:12px; color:var(--muted); text-align:center; text-transform:uppercase; letter-spacing:.08em;}
-  .sheet-art{ width:100%; max-width:340px; aspect-ratio:1; border-radius:20px; margin:0 auto 32px; background-size:cover; background-position:center; box-shadow:0 30px 60px -20px rgba(0,0,0,.6); }
-  .sheet-info-row{display:flex; align-items:center; gap:14px; max-width:340px; margin:0 auto 26px; width:100%;}
-  .sheet-info{flex:1; min-width:0;}
-  .sheet-title{font-family:'Fraunces',serif; font-weight:600; font-size:22px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .sheet-artist{color:var(--muted); font-size:14px; margin-top:2px;}
-  .sheet-actions{display:flex; gap:10px; flex-shrink:0;}
-  .sheet-actions button{color:var(--muted); padding:6px;}
-  .sheet-actions button.liked{color:var(--amber);}
-  .sheet-seek-row{max-width:340px; margin:0 auto 6px; width:100%;}
-  .sheet-seek{ width:100%; -webkit-appearance:none; height:4px; border-radius:2px; background:var(--surface-3); outline:none; }
-  .sheet-seek::-webkit-slider-thumb{-webkit-appearance:none; width:14px; height:14px; border-radius:50%; background:var(--amber);}
-  .sheet-times{max-width:340px; margin:0 auto 24px; width:100%; display:flex; justify-content:space-between; font-size:11.5px; color:var(--muted); font-family:'IBM Plex Mono',monospace;}
-  .sheet-controls{display:flex; align-items:center; justify-content:center; gap:30px; margin-bottom:34px;}
-  .sheet-play{ width:66px; height:66px; border-radius:50%; background:var(--ink); color:var(--bg); display:flex; align-items:center; justify-content:center; clip-path: polygon(50% 0%, 61% 4%, 71% 11%, 89% 11%, 96% 21%, 96% 33%, 100% 50%, 96% 67%, 96% 79%, 89% 89%, 71% 89%, 61% 96%, 50% 100%, 39% 96%, 29% 89%, 11% 89%, 4% 79%, 4% 67%, 0% 50%, 4% 33%, 4% 21%, 11% 11%, 29% 11%, 39% 4%); }
-  .sheet-controls .ctrl-btn{color:var(--ink);}
-  .sheet-bottom-icons{display:flex; align-items:center; justify-content:space-between; max-width:340px; margin:0 auto; width:100%;}
-  .sheet-bottom-icons button{color:var(--muted); padding:8px;}
-  .sheet-bottom-icons button.active-toggle{color:var(--amber);}
-  .sheet-lyrics-view{flex:1; overflow-y:auto; display:none; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px 0;}
-  .sheet-lyrics-view.open{display:flex;}
-  .sheet-lyrics-view .lyric-line{font-size:19px; text-align:center;}
+  /* ===== waveform divider ===== */
+  .wave-divider{ position:relative; height:64px; overflow:hidden; border-top:1px solid var(--line); border-bottom:1px solid var(--line); background:var(--surface); }
+  .wave-track{ position:absolute; inset:0; display:flex; align-items:center; gap:4px; padding:0 20px; animation:wave-scroll 18s linear infinite; width:200%; }
+  .wave-track span{ flex-shrink:0; width:3px; border-radius:2px; background:linear-gradient(to top, var(--amber), var(--teal)); opacity:.55; }
+  @keyframes wave-scroll{ from{transform:translateX(0);} to{transform:translateX(-50%);} }
+  @media (prefers-reduced-motion: reduce){ .wave-track{animation:none;} }
 
-  a:focus-visible, button:focus-visible{outline:2px solid var(--amber); outline-offset:2px;}
+  /* ===== screenshot mock ===== */
+  .showcase{padding:100px 0 20px;}
+  .device{ max-width:940px; margin:0 auto; border-radius:20px; overflow:hidden; border:1px solid var(--line); box-shadow:0 50px 120px -40px rgba(0,0,0,0.7); background:var(--surface); }
+  .device-bar{ display:flex; gap:6px; padding:12px 16px; background:var(--surface-2); }
+  .device-bar span{width:10px; height:10px; border-radius:50%; background:var(--line);}
+  .mock-player{ display:flex; padding:30px; gap:22px; align-items:center; flex-wrap:wrap; }
+  .mock-art{ width:100px; height:100px; border-radius:14px; background:linear-gradient(135deg,var(--amber),var(--teal)); flex-shrink:0; position:relative; overflow:hidden; }
+  .mock-art::after{ content:''; position:absolute; inset:0; background:repeating-linear-gradient(115deg, transparent 0 10px, rgba(0,0,0,0.06) 10px 11px); }
+  .mock-info{flex:1; min-width:200px;}
+  .mock-title{font-family:'Fraunces',serif; font-size:21px; font-weight:600; margin-bottom:4px;}
+  .mock-artist{color:var(--muted); font-size:14px; margin-bottom:16px;}
+  .mock-bar{height:5px; background:var(--surface-2); border-radius:3px; overflow:hidden; margin-bottom:16px;}
+  .mock-fill{width:38%; height:100%; background:linear-gradient(90deg,var(--teal),var(--amber));}
+  .mock-controls{display:flex; gap:20px; align-items:center; color:var(--ink);}
+  .mock-lyrics{padding:0 30px 30px;}
+  .mock-lyrics .line{font-family:'Fraunces',serif; font-style:italic; font-size:17px; color:var(--muted); padding:6px 0;}
+  .mock-lyrics .line.active{color:var(--amber); font-weight:600;}
+
+  /* ===== features ===== */
+  .features{padding:110px 0;}
+  .section-head{max-width:560px; margin-bottom:56px;}
+  .section-head .kicker{color:var(--amber);}
+  .section-head .kicker::before{background:var(--amber);}
+  .section-head h2{font-family:'Fraunces', serif; font-weight:600; font-size:clamp(30px,4vw,44px); letter-spacing:-0.01em;}
+  .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:18px; overflow:hidden;}
+  .card{background:var(--surface); padding:38px 32px; transition:background .2s;}
+  .card:hover{background:var(--surface-2);}
+  .card .num{font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--teal); margin-bottom:20px;}
+  .card h3{font-family:'Fraunces', serif; font-weight:600; font-size:22px; margin-bottom:10px;}
+  .card p{font-size:14.5px; color:var(--muted);}
+  @media (max-width:820px){ .grid{grid-template-columns:1fr;} }
+
+  /* ===== platforms ===== */
+  .platforms{padding:0 0 110px;}
+  .plat-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:20px;}
+  @media (max-width:820px){ .plat-grid{grid-template-columns:1fr;} }
+  .plat-card{ background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:34px 30px; display:flex; flex-direction:column; gap:16px; transition:border-color .2s, transform .2s; }
+  .plat-card:hover{border-color:var(--amber); transform:translateY(-3px);}
+  .plat-icon{ width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:var(--surface-2); color:var(--amber); }
+  .plat-card h3{font-family:'Fraunces',serif; font-size:19px; font-weight:600;}
+  .plat-card p{font-size:13.5px; color:var(--muted); flex:1;}
+  .plat-card .btn{align-self:flex-start;}
+
+  /* ===== faq ===== */
+  .faq{padding:0 0 110px;}
+  .faq-item{ border-bottom:1px solid var(--line); }
+  .faq-q{ display:flex; align-items:center; justify-content:space-between; padding:24px 0; cursor:pointer; font-family:'Fraunces',serif; font-size:18px; font-weight:500; }
+  .faq-q .plus{ font-size:22px; color:var(--muted); transition:transform .2s; flex-shrink:0; margin-left:20px; }
+  .faq-item.open .faq-q .plus{transform:rotate(45deg); color:var(--amber);}
+  .faq-a{ max-height:0; overflow:hidden; transition:max-height .25s ease; color:var(--muted); font-size:14.5px; }
+  .faq-item.open .faq-a{max-height:200px;}
+  .faq-a p{padding-bottom:24px;}
+
+  /* ===== cta band ===== */
+  .band{ position:relative; background:linear-gradient(135deg, var(--surface), var(--surface-2)); border-radius:28px; margin:0 28px 100px; padding:80px 40px; text-align:center; border:1px solid var(--line); overflow:hidden; }
+  .band-eq{ position:absolute; inset:0; display:flex; align-items:flex-end; justify-content:center; gap:5px; opacity:.12; }
+  .band-eq span{ width:4px; background:var(--amber); border-radius:2px; animation:band-bounce 1.3s ease-in-out infinite; }
+  @keyframes band-bounce{ 0%,100%{height:10px;} 50%{height:70px;} }
+  .band-content{position:relative;}
+  .band h2{font-family:'Fraunces', serif; font-weight:600; font-size:clamp(28px,4vw,44px); margin-bottom:18px;}
+  .band p{color:var(--muted); margin-bottom:34px;}
+
+  footer{border-top:1px solid var(--line); padding:48px 0 60px;}
+  .foot-inner{display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:32px;}
+  .foot-brand{max-width:260px;}
+  .foot-brand p{color:var(--muted); font-size:13px; margin-top:10px; line-height:1.6;}
+  .foot-cols{display:flex; gap:56px; flex-wrap:wrap;}
+  .foot-col h4{font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-bottom:14px;}
+  .foot-col a{display:block; font-size:14px; color:var(--ink); text-decoration:none; margin-bottom:10px; opacity:.85;}
+  .foot-col a:hover{opacity:1; color:var(--amber);}
+  .foot-bottom{ margin-top:44px; padding-top:24px; border-top:1px solid var(--line); display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; font-size:12.5px; color:var(--muted); }
+
+  a:focus-visible, button:focus-visible{outline:2px solid var(--amber); outline-offset:3px;}
 </style>
 </head>
 <body>
 
-<div class="app desktop-only" id="desktopApp">
-  <div class="sidebar">
-    <a href="info.html" class="logo-link"><div class="logo">oli<span>.</span></div></a>
-    <div class="nav-item active" data-view="home">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>
-      Home
+<header>
+  <nav class="wrap">
+    <a href="index.html" class="logo">oli<span>.</span></a>
+    <div class="nav-links">
+      <a href="#showcase">Preview</a>
+      <a href="#features">Features</a>
+      <a href="#platforms">Get Oli</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://github.com/oli-music/oli" target="_blank" rel="noopener">Source</a>
     </div>
-    <div class="nav-item" id="searchNavItem" data-view="home">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-      Search
+    <div class="nav-cta">
+      <a class="btn btn-ghost btn-sm" href="https://github.com/oli-music" target="_blank" rel="noopener">GitHub</a>
+      <a class="btn btn-sm" href="https://github.com/oli-music/oli/releases" target="_blank" rel="noopener">Download</a>
+      <button class="menu-toggle" id="menuToggle" aria-label="Open menu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
     </div>
-    <div class="nav-item" data-view="library">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13M9 18a3 3 0 11-6 0 3 3 0 016 0zM21 16a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-      Library
-    </div>
-    <div class="nav-item" data-view="equalizer">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21V14M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
-      Equalizer
-    </div>
-    <div class="nav-item" data-view="listen-together">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-      Listen Together
-    </div>
-    <div class="nav-item" data-view="settings">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-      Settings
-    </div>
-    <div class="nav-section"><span>Playlists</span><button id="newPlaylistBtnSidebar" title="New playlist">+</button></div>
-    <div id="sidebarPlaylists"></div>
-    <div class="sidebar-foot">
-      <a href="info.html" class="back-link">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-        About Oli
-      </a>
-    </div>
-  </div>
+  </nav>
+</header>
 
-  <div class="main">
-    <div class="topbar">
-      <div class="search">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input id="searchInput" placeholder="Search songs, artists, playlists…" aria-label="Search" />
-      </div>
-    </div>
-
-    <div class="content">
-      <div class="view-panel active" id="panelHome-d">
-        <div class="chip-row" id="chipRowDesktop"></div>
-        <h2 class="section-title">Mood and Genres</h2>
-        <div class="genre-grid" id="genreGridDesktop"></div>
-        <h2 class="section-title">Trending community playlists</h2>
-        <div class="trend-scroll" id="trendScrollDesktop"></div>
-        <h2 class="section-title" id="gridHeading">Quick picks</h2>
-        <div class="section-sub" id="gridSubtext">Demo playback — connect oli-web-api in Settings to search and stream real tracks.</div>
-        <div class="track-grid" id="grid"></div>
-        <div class="empty-state" id="noResults" style="display:none;">No tracks match your search.</div>
-        <h2 class="section-title">Up next</h2>
-        <div class="section-sub">Queue</div>
-        <div class="row-list" id="queueList"></div>
-      </div>
-
-      <div class="view-panel" id="panelLibrary-d">
-        <h2 class="section-title">Library</h2>
-        <div class="section-sub">Playlists, favorites, and listening history — stored locally in this browser.</div>
-        <div class="tab-row" id="libTabsDesktop"></div>
-        <div id="libraryContentDesktop"></div>
-      </div>
-
-      <div class="view-panel" id="panelEq-d">
-        <h2 class="section-title">Equalizer</h2>
-        <div class="section-sub">Real-time audio shaping via Web Audio API — applies live to whatever's playing.</div>
-        <div class="eq-panel" id="eqPanelDesktop"></div>
-      </div>
-
-      <div class="view-panel" id="panelListen-d">
-        <h2 class="section-title">Listen Together</h2>
-        <div class="section-sub">Sync playback in real time with people on the Android app.</div>
-        <div id="listenPanelDesktop"></div>
-      </div>
-
-      <div class="view-panel" id="panelSettings-d">
-        <h2 class="section-title">Settings</h2>
-        <div class="section-sub">Configuration is stored locally in this browser.</div>
-        <div id="settingsPanelDesktop"></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="lyrics-panel" id="lyricsPanel">
-    <h3>
-      <span>Synced lyrics</span>
-      <button id="lyricsCloseMobile" style="color:var(--muted);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
-    </h3>
-    <div id="lyricsList"></div>
-    <div class="lyrics-empty" id="lyricsEmpty" style="display:none;">Play a track to see lyrics here.</div>
-  </div>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#showcase">Preview</a>
+  <a href="#features">Features</a>
+  <a href="#platforms">Get Oli</a>
+  <a href="#faq">FAQ</a>
+  <a href="https://github.com/oli-music/oli" target="_blank" rel="noopener">Source</a>
+  <a href="privacy.html">Privacy</a>
+  <a href="terms.html">Terms</a>
+  <a class="btn" href="https://github.com/oli-music/oli/releases" target="_blank" rel="noopener">Download Oli</a>
 </div>
 
-<div class="player-bar desktop-only">
-  <div class="now-playing">
-    <div class="np-art art gradient-1" id="npArt"></div>
-    <div class="np-info">
-      <div class="np-title" id="npTitle">Nothing playing</div>
-      <div class="np-artist" id="npArtist">Pick a track to start</div>
-    </div>
-    <button class="like-btn" id="likeBtn" aria-label="Like" disabled>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 000-7.8z"/></svg>
-    </button>
-  </div>
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="kicker mono">Free &middot; Open source &middot; Ad-free</div>
+      <h1>Music, without <em>the noise.</em></h1>
+      <p class="sub">Oli is a free music player with synced lyrics, offline downloads, and zero interruptions. No subscription. No ads. Just the song.</p>
+      <div class="hero-cta">
+        <a class="btn" href="https://github.com/oli-music/oli/releases" target="_blank" rel="noopener">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 00-3.16 19.5c.5.1.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.16-1.11-1.47-1.11-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.56-1.11-4.56-4.94 0-1.1.39-1.99 1.03-2.69-.1-.26-.45-1.28.1-2.66 0 0 .84-.27 2.75 1.02A9.6 9.6 0 0112 6.8c.85 0 1.7.11 2.5.34 1.9-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.66.64.7 1.03 1.59 1.03 2.69 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85V21c0 .27.18.58.69.48A10 10 0 0012 2z"/></svg>
+          Download for Android
+        </a>
+        <a class="btn btn-ghost" href="#platforms">See all platforms</a>
+      </div>
+      <div class="hero-note">GPL-3.0 licensed — fork it, audit it, ship it</div>
 
-  <div class="transport">
-    <div class="controls">
-      <button class="ctrl-btn" id="shuffleBtn" title="Shuffle" aria-label="Shuffle">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
-      </button>
-      <button class="ctrl-btn" id="prevBtn" title="Previous" aria-label="Previous track" disabled>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
-      </button>
-      <button class="play-main" id="playBtn" title="Play/Pause" aria-label="Play or pause">
-        <svg id="playIcon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-      </button>
-      <button class="ctrl-btn" id="nextBtn" title="Next" aria-label="Next track" disabled>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM6 6v12l8.5-6z"/></svg>
-      </button>
-      <button class="ctrl-btn" id="repeatBtn" title="Repeat" aria-label="Repeat">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 2l4 4-4 4M3 11V9a4 4 0 014-4h14M7 22l-4-4 4-4M21 13v2a4 4 0 01-4 4H3"/></svg>
-      </button>
-    </div>
-    <div class="seek-row">
-      <div class="time" id="curTime">0:00</div>
-      <input type="range" class="seek" id="seek" min="0" max="100" value="0" disabled aria-label="Seek">
-      <div class="time right" id="durTime">0:00</div>
-    </div>
-  </div>
-
-  <div class="right-controls">
-    <button class="lyrics-toggle" id="lyricsToggle" aria-label="Toggle lyrics">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h13"/></svg>
-      <span>Lyrics</span>
-    </button>
-    <div class="vol-row">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;color:var(--muted);"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/></svg>
-      <input type="range" class="vol" id="vol" min="0" max="100" value="70" aria-label="Volume">
-    </div>
-  </div>
-</div>
-
-<div class="mobile-only" id="mobileApp" style="flex-direction:column; flex:1; min-height:0;">
-  <div class="mobile-topbar" id="mobileTopbarHome">
-    <div class="logo">oli<span style="color:var(--amber);">.</span></div>
-    <div class="mobile-icons">
-      <button class="icon-btn" data-view="library" aria-label="Library"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/></svg></button>
-      <button class="icon-btn" data-view="listen-together" aria-label="Listen Together"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8z"/></svg></button>
-      <button class="icon-btn" data-view="settings" aria-label="Settings"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></button>
-    </div>
-  </div>
-
-  <div class="mobile-search" id="mobileSearchBar">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-    <input id="searchInputMobile" placeholder="Search songs, artists, playlists…" aria-label="Search" />
-  </div>
-
-  <div class="mobile-content" id="mobileContent">
-    <div class="view-panel active" id="panelHome-m">
-      <div class="chip-row" id="chipRowMobile"></div>
-      <h2>Mood and Genres <span class="arrow">&rarr;</span></h2>
-      <div class="genre-grid" id="genreGridMobile"></div>
-      <h2>Trending community playlists</h2>
-      <div class="trend-scroll" id="trendScrollMobile"></div>
-      <h2 id="gridHeadingMobile">Quick picks</h2>
-      <div class="track-grid" id="gridMobile"></div>
-      <div class="empty-state" id="noResultsMobile" style="display:none;">No tracks match your search.</div>
-    </div>
-
-    <div class="view-panel" id="panelLibrary-m">
-      <div class="view-header-mobile"><button data-back><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><div class="title">Library</div></div>
-      <div style="padding:0 0 12px;">
-        <div class="tab-row" id="libTabsMobile"></div>
-        <div id="libraryContentMobile"></div>
+      <div class="stats">
+        <div class="stat"><div class="num">0</div><div class="label">Ads, ever</div></div>
+        <div class="stat"><div class="num">100%</div><div class="label">Open source</div></div>
+        <div class="stat"><div class="num">3</div><div class="label">Platforms</div></div>
       </div>
     </div>
 
-    <div class="view-panel" id="panelEq-m">
-      <div class="view-header-mobile"><button data-back><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><div class="title">Equalizer</div></div>
-      <div style="padding:0 0 12px;" id="eqPanelMobile"></div>
-    </div>
-
-    <div class="view-panel" id="panelListen-m">
-      <div class="view-header-mobile"><button data-back><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><div class="title">Listen Together</div></div>
-      <div style="padding:0 0 12px;" id="listenPanelMobile"></div>
-    </div>
-
-    <div class="view-panel" id="panelSettings-m">
-      <div class="view-header-mobile"><button data-back><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button><div class="title">Settings</div></div>
-      <div style="padding:0 0 12px;" id="settingsPanelMobile"></div>
+    <div class="vinyl-stage" aria-hidden="true">
+      <div class="vinyl-glow"></div>
+      <div class="vinyl">
+        <div class="vinyl-label"><div class="vinyl-label-inner">oli</div></div>
+        <div class="vinyl-hole"></div>
+      </div>
+      <svg class="tonearm" viewBox="0 0 150 150" fill="none">
+        <circle cx="130" cy="20" r="9" fill="#241f3d" stroke="#8B84A6" stroke-width="1.5"/>
+        <line x1="130" y1="20" x2="35" y2="95" stroke="#8B84A6" stroke-width="4" stroke-linecap="round"/>
+        <path d="M35 95 L20 108 L38 112 Z" fill="#F2A93B"/>
+      </svg>
     </div>
   </div>
+</section>
 
-  <div class="mini-player" id="miniPlayer" style="display:none;">
-    <div class="mini-art gradient-1" id="miniArt"></div>
-    <div class="mini-info" id="miniInfoTap">
-      <div class="mini-title" id="miniTitle">Nothing playing</div>
-      <div class="mini-artist" id="miniArtist">—</div>
-    </div>
-    <div class="mini-controls">
-      <button class="mini-play" id="miniPlayBtn" aria-label="Play or pause">
-        <svg id="miniPlayIcon" width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-      </button>
-    </div>
-    <div class="mini-seek-track"><div class="mini-seek-fill" id="miniSeekFill"></div></div>
-  </div>
-
-  <div class="bottom-nav">
-    <div class="bn-item active" data-view="home">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>
-      Home
-    </div>
-    <div class="bn-item" id="bnSearch" data-view="home">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-      Search
-    </div>
-    <div class="bn-item" data-view="library">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13M9 18a3 3 0 11-6 0 3 3 0 016 0zM21 16a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-      Library
-    </div>
-    <div class="bn-item" data-view="equalizer">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21V14M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
-      Equalizer
-    </div>
-    <div class="bn-item" data-view="settings">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82"/></svg>
-      Settings
-    </div>
-  </div>
+<div class="wave-divider" aria-hidden="true">
+  <div class="wave-track" id="waveTrack"></div>
 </div>
 
-<div class="np-sheet" id="npSheet">
-  <div class="sheet-topbar">
-    <button id="sheetClose" aria-label="Close"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
-    <div class="sheet-label" id="sheetLabel">Now Playing</div>
-    <button id="sheetAddToPlaylistBtn" aria-label="Add to playlist"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13M9 18a3 3 0 11-6 0 3 3 0 016 0zM21 16a3 3 0 11-6 0 3 3 0 016 0zM3 9h4"/></svg></button>
-  </div>
-
-  <div class="sheet-art gradient-1" id="sheetArt"></div>
-
-  <div class="sheet-info-row">
-    <div class="sheet-info">
-      <div class="sheet-title" id="sheetTitle">Nothing playing</div>
-      <div class="sheet-artist" id="sheetArtist">—</div>
-    </div>
-    <div class="sheet-actions">
-      <button id="sheetDownloadBtn" aria-label="Download"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></button>
-      <button id="sheetLikeBtn" aria-label="Like"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 000-7.8z"/></svg></button>
-    </div>
-  </div>
-
-  <div class="sheet-seek-row"><input type="range" class="sheet-seek" id="sheetSeek" min="0" max="100" value="0" disabled aria-label="Seek"></div>
-  <div class="sheet-times"><span id="sheetCurTime">0:00</span><span id="sheetDurTime">0:00</span></div>
-
-  <div class="sheet-controls">
-    <button class="ctrl-btn" id="sheetPrevBtn" aria-label="Previous" disabled>
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
-    </button>
-    <button class="sheet-play" id="sheetPlayBtn" aria-label="Play or pause">
-      <svg id="sheetPlayIcon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-    </button>
-    <button class="ctrl-btn" id="sheetNextBtn" aria-label="Next" disabled>
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM6 6v12l8.5-6z"/></svg>
-    </button>
-  </div>
-
-  <div class="sheet-bottom-icons">
-    <button id="sheetQueueBtn" aria-label="Queue"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13M9 18a3 3 0 11-6 0 3 3 0 016 0zM21 16a3 3 0 11-6 0 3 3 0 016 0z"/></svg></button>
-    <button id="sheetTimerBtn" aria-label="Sleep timer"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></button>
-    <button id="sheetLyricsBtn" aria-label="Lyrics"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h10M4 18h13"/></svg></button>
-    <button id="sheetShuffleBtn" aria-label="Shuffle"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg></button>
-    <button id="sheetRepeatBtn" aria-label="Repeat"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 2l4 4-4 4M3 11V9a4 4 0 014-4h14M7 22l-4-4 4-4M21 13v2a4 4 0 01-4 4H3"/></svg></button>
-  </div>
-
-  <div class="sheet-lyrics-view" id="sheetLyricsView">
-    <div id="sheetLyricsList"></div>
-    <div class="lyrics-empty" id="sheetLyricsEmpty">No synced lyrics for this track yet.</div>
-  </div>
-</div>
-
-<div class="modal-backdrop" id="playlistModal">
-  <div class="modal">
-    <h3>Add to playlist</h3>
-    <div class="modal-playlist-list" id="modalPlaylistList"></div>
-    <input type="text" id="newPlaylistNameInput" placeholder="New playlist name…">
-    <div class="modal-actions">
-      <button class="btn btn-ghost" id="modalCancelBtn">Cancel</button>
-      <button class="btn" id="modalCreateBtn">Create &amp; add</button>
+<section class="showcase" id="showcase">
+  <div class="wrap">
+    <div class="device">
+      <div class="device-bar"><span></span><span></span><span></span></div>
+      <div class="mock-player">
+        <div class="mock-art"></div>
+        <div class="mock-info">
+          <div class="mock-title">Amber Skyline</div>
+          <div class="mock-artist">The Northbound</div>
+          <div class="mock-bar"><div class="mock-fill"></div></div>
+          <div class="mock-controls">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="#F2A93B"><path d="M8 5v14l11-7z"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM6 6v12l8.5-6z"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="mock-lyrics">
+        <div class="line">through a window down the hall</div>
+        <div class="line active">and I would drive all night</div>
+        <div class="line">just to feel the light</div>
+      </div>
     </div>
   </div>
-</div>
+</section>
 
-<div class="toast" id="toast"></div>
-<audio id="audio" preload="metadata" crossorigin="anonymous"></audio>
+<section class="features wrap" id="features">
+  <div class="section-head">
+    <div class="kicker mono">What's inside</div>
+    <h2>Everything a listener actually needs — nothing they don't.</h2>
+  </div>
+  <div class="grid">
+    <div class="card"><div class="num mono">01</div><h3>Synced lyrics</h3><p>Word-by-word timing, so the lyric on screen is always the one leaving the speaker.</p></div>
+    <div class="card"><div class="num mono">02</div><h3>Offline downloads</h3><p>Save any track or playlist. No signal, no problem — your library travels with you.</p></div>
+    <div class="card"><div class="num mono">03</div><h3>Zero ads</h3><p>No pre-rolls, no banners, no "skip in 5 seconds." Just uninterrupted playback.</p></div>
+    <div class="card"><div class="num mono">04</div><h3>Smart queueing</h3><p>Oli learns the shape of your listening session and keeps the queue moving with it.</p></div>
+    <div class="card"><div class="num mono">05</div><h3>Open source</h3><p>Every line is public. Fork it, audit it, send a pull request — it's yours as much as ours.</p></div>
+    <div class="card"><div class="num mono">06</div><h3>Adaptive theming</h3><p>The interface pulls its palette from whatever's playing — a small, quiet kind of personalization.</p></div>
+  </div>
+</section>
+
+<section class="platforms wrap" id="platforms">
+  <div class="section-head">
+    <div class="kicker mono">Get Oli</div>
+    <h2>Pick your platform</h2>
+  </div>
+  <div class="plat-grid">
+    <div class="plat-card">
+      <div class="plat-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85-.29-.15-.65-.06-.83.22l-1.88 3.24a11.43 11.43 0 00-8.94 0L5.65 5.67c-.19-.28-.55-.37-.83-.22-.3.16-.42.54-.26.85L6.4 9.48C3.3 11.25 1.28 14.44 1 18h22c-.28-3.56-2.3-6.75-5.4-8.52zM7 15.25a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5zm10 0a1.25 1.25 0 110-2.5 1.25 1.25 0 010 2.5z"/></svg>
+      </div>
+      <h3>Android</h3>
+      <p>The main app — ad-free streaming, synced lyrics, offline downloads, and Listen Together sync.</p>
+      <a class="btn btn-ghost" href="https://github.com/oli-music/oli/releases" target="_blank" rel="noopener">Download APK</a>
+    </div>
+    <div class="plat-card">
+      <div class="plat-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      </div>
+      <h3>Desktop</h3>
+      <p>Windows, macOS, and Linux builds with the same library, downloads, and playback engine.</p>
+      <a class="btn btn-ghost" href="https://github.com/oli-music/oli-desktop/releases" target="_blank" rel="noopener">Download Desktop</a>
+    </div>
+    <div class="plat-card">
+      <div class="plat-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
+      </div>
+      <h3>Source</h3>
+      <p>GPL-3.0 licensed and built in the open. Fork it, audit it, or run your own build.</p>
+      <a class="btn btn-ghost" href="https://github.com/oli-music" target="_blank" rel="noopener">View on GitHub</a>
+    </div>
+  </div>
+</section>
+
+<section class="faq wrap" id="faq">
+  <div class="section-head">
+    <div class="kicker mono">Questions</div>
+    <h2>Before you ask</h2>
+  </div>
+  <div class="faq-item open">
+    <div class="faq-q"><span>Is Oli really free?</span><span class="plus">+</span></div>
+    <div class="faq-a"><p>Yes — no subscription tiers, no premium unlock, no ads to skip. It's free because it's open source and community-run, not because your data is the product.</p></div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q"><span>Where does the music come from?</span><span class="plus">+</span></div>
+    <div class="faq-a"><p>Oli streams from existing platforms rather than hosting content itself. Playback quality and catalog depend on what's available there.</p></div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q"><span>Is there a desktop version?</span><span class="plus">+</span></div>
+    <div class="faq-a"><p>Yes — Windows, macOS, and Linux builds are available. Check the <a href="https://github.com/oli-music/oli-desktop" target="_blank" rel="noopener" style="color:#3FBFAE;">oli-desktop repo</a> for the latest release.</p></div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q"><span>Can I contribute?</span><span class="plus">+</span></div>
+    <div class="faq-a"><p>Absolutely — it's GPL-3.0 licensed and built in the open. Pull requests, issues, and forks are all welcome on <a href="https://github.com/oli-music" target="_blank" rel="noopener" style="color:#3FBFAE;">GitHub</a>.</p></div>
+  </div>
+</section>
+
+<section class="band wrap">
+  <div class="band-eq" id="bandEq"></div>
+  <div class="band-content">
+    <h2>Put the ads on mute.</h2>
+    <p>Free, open source, and built for people who just want to listen.</p>
+    <a class="btn" href="https://github.com/oli-music/oli/releases" target="_blank" rel="noopener">Download Oli</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-inner">
+      <div class="foot-brand">
+        <a href="index.html" class="logo">oli<span>.</span></a>
+        <p>A free, open-source music player with synced lyrics and offline playback. Music, without the noise.</p>
+      </div>
+      <div class="foot-cols">
+        <div class="foot-col">
+          <h4>Get Oli</h4>
+          <a href="https://github.com/oli-music/oli/releases" target="_blank" rel="noopener">Android</a>
+          <a href="https://github.com/oli-music/oli-desktop/releases" target="_blank" rel="noopener">Desktop</a>
+        </div>
+        <div class="foot-col">
+          <h4>Project</h4>
+          <a href="https://github.com/oli-music/oli" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/oli-music/oli/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">Contribute</a>
+          <a href="https://github.com/oli-music/oli/issues" target="_blank" rel="noopener">Report an issue</a>
+        </div>
+        <div class="foot-col">
+          <h4>Legal</h4>
+          <a href="privacy.html">Privacy</a>
+          <a href="terms.html">Terms</a>
+          <a href="https://github.com/oli-music/oli/blob/main/LICENSE" target="_blank" rel="noopener">License</a>
+        </div>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>&copy; 2026 Oli. Licensed GPL-3.0.</span>
+      <span>Rebranded from Echo Music, by Aditya Yadav.</span>
+    </div>
+  </div>
+</footer>
 
 <script>
-const TRACKS = [
-  { id:1, title:"Amber Skyline",   artist:"The Northbound",   grad:"gradient-1", src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
-  { id:2, title:"Violet Hours",    artist:"Coastline Static", grad:"gradient-2", src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
-  { id:3, title:"Slow Bloom",      artist:"Marina & the Tide",grad:"gradient-3", src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" },
-  { id:4, title:"Static Bloom",    artist:"Nightbus",         grad:"gradient-4", src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3" },
-  { id:5, title:"Paper Lanterns",  artist:"Halfmoon Radio",   grad:"gradient-5", src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3" },
-  { id:6, title:"Low Tide Drive",  artist:"The Northbound",   grad:"gradient-6", src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3" },
-];
-const DEMO_LYRICS = [
-  {t:0,line:"♪ instrumental"},{t:8,line:"City lights are bleeding gold"},{t:14,line:"through a window down the hall"},
-  {t:20,line:"and I would drive all night"},{t:26,line:"just to feel the light"},{t:33,line:"on the other side"},
-  {t:40,line:"♪ instrumental"},{t:48,line:"You said the static keeps you warm"},{t:54,line:"like a station out of range"},
-  {t:60,line:"and I would drive all night"},{t:66,line:"just to feel the light"},{t:73,line:"on the other side"},{t:82,line:"♪ instrumental"},
-];
-const CHIPS = ["Feel good","Relax","Romance","Party","Energize","Focus","Chill"];
-const GENRES = ["Chill","Focus","Commute","Gaming","Energize","Party","Feel good","Romance"];
-const GRADIENTS = ["gradient-1","gradient-2","gradient-3","gradient-4","gradient-5","gradient-6"];
-const ACCENTS = { amber:"#F2A93B", teal:"#3FBFAE", violet:"#7A5CFA", rose:"#E8637B" };
-const EQ_BANDS = [
-  {freq:60, type:'lowshelf'}, {freq:230, type:'peaking'}, {freq:910, type:'peaking'},
-  {freq:3000, type:'peaking'}, {freq:14000, type:'highshelf'},
-];
-
-function gradFor(id){
-  let hash = 0;
-  for(const ch of String(id)) hash = (hash*31 + ch.charCodeAt(0)) >>> 0;
-  return GRADIENTS[hash % GRADIENTS.length];
-}
-function fmt(s){
-  if(!isFinite(s)) return "0:00";
-  const m = Math.floor(s/60), sec = Math.floor(s%60);
-  return m + ":" + String(sec).padStart(2,'0');
-}
-function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
-
-const STORAGE_KEY = 'oli_state_v1';
-function loadState(){
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(!raw) return defaultState();
-    const parsed = JSON.parse(raw);
-    return { ...defaultState(), ...parsed };
-  } catch(e) { return defaultState(); }
-}
-function defaultState(){
-  return {
-    apiBase: "",
-    accent: "amber",
-    listenServerUrl: "wss://oli-server.onrender.com/ws",
-    eqEnabled: false,
-    eqGains: EQ_BANDS.map(()=>0),
-    favorites: [],
-    history: [],
-    playlists: [],
-  };
-}
-let state = loadState();
-function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-
-let API_BASE = state.apiBase;
-function isApiConfigured(){ return API_BASE.trim().length > 0; }
-
-let liveResults = null;
-let queue = [...TRACKS];
-let currentIndex = -1;
-let isPlaying = false;
-let isLoading = false;
-let shuffled = false;
-let repeatMode = false;
-let sheetShowingLyrics = false;
-let pendingPlaylistTrack = null;
-
-const audio = document.getElementById('audio');
-const toast = document.getElementById('toast');
-function showToast(msg){
-  toast.textContent = msg;
-  toast.classList.add('show');
-  clearTimeout(showToast._t);
-  showToast._t = setTimeout(()=> toast.classList.remove('show'), 2800);
-}
-
-let currentView = 'home';
-function showView(view){
-  currentView = view;
-  const map = { home:'Home', library:'Library', equalizer:'Eq', 'listen-together':'Listen', settings:'Settings' };
-  Object.entries(map).forEach(([v, suffix])=>{
-    const d = document.getElementById(`panel${suffix}-d`);
-    const m = document.getElementById(`panel${suffix}-m`);
-    if(d) d.classList.toggle('active', v === view);
-    if(m) m.classList.toggle('active', v === view);
-  });
-  document.querySelectorAll('.nav-item[data-view]').forEach(el=> el.classList.toggle('active', el.dataset.view === view));
-  document.querySelectorAll('.bn-item[data-view]').forEach(el=> el.classList.toggle('active', el.dataset.view === view));
-
-  const isHome = view === 'home';
-  document.getElementById('mobileTopbarHome').style.display = isHome ? 'flex' : 'none';
-  document.getElementById('mobileSearchBar').style.display = isHome ? 'flex' : 'none';
-
-  if(view === 'library') renderLibraryViews();
-  if(view === 'equalizer') renderEqualizerViews();
-  if(view === 'listen-together') renderListenTogetherViews();
-  if(view === 'settings') renderSettingsViews();
-}
-document.querySelectorAll('[data-view]').forEach(el=> el.addEventListener('click', ()=> showView(el.dataset.view)));
-document.querySelectorAll('.view-header-mobile [data-back]').forEach(btn=> btn.addEventListener('click', ()=> showView('home')));
-
-function renderStaticSections(){
-  [document.getElementById('chipRowDesktop'), document.getElementById('chipRowMobile')].forEach(row=>{
-    if(!row) return;
-    row.innerHTML = '';
-    CHIPS.forEach(label=>{
-      const chip = document.createElement('div');
-      chip.className = 'chip'; chip.textContent = label;
-      chip.onclick = ()=> triggerSearch(label);
-      row.appendChild(chip);
-    });
-  });
-  [document.getElementById('genreGridDesktop'), document.getElementById('genreGridMobile')].forEach(grid=>{
-    if(!grid) return;
-    grid.innerHTML = '';
-    GENRES.forEach(label=>{
-      const card = document.createElement('div');
-      card.className = 'genre-card'; card.textContent = label;
-      card.onclick = ()=> triggerSearch(label);
-      grid.appendChild(card);
-    });
-  });
-  [document.getElementById('trendScrollDesktop'), document.getElementById('trendScrollMobile')].forEach(scroll=>{
-    if(!scroll) return;
-    scroll.innerHTML = '';
-    TRACKS.forEach(t=>{
-      const card = document.createElement('div');
-      card.className = 'trend-card';
-      card.innerHTML = `
-        <div class="trend-art ${t.grad}"><div class="playbtn"><div class="playbtn-circle">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-        </div></div></div>
-        <div class="t-title">${t.title}</div><div class="t-artist">${t.artist}</div>`;
-      card.onclick = ()=> playTrackById(t.id, TRACKS);
-      scroll.appendChild(card);
-    });
-  });
-}
-function triggerSearch(term){
-  showView('home');
-  [document.getElementById('searchInput'), document.getElementById('searchInputMobile')].forEach(i => { if(i) i.value = term; });
-  runSearch(term);
-}
-
-function isFavorite(id){ return state.favorites.some(t=>t.id===id); }
-function toggleFavorite(track){
-  const idx = state.favorites.findIndex(t=>t.id===track.id);
-  if(idx > -1){ state.favorites.splice(idx,1); showToast("Removed from Favorites"); }
-  else { state.favorites.unshift(track); showToast("Added to Favorites"); }
-  saveState();
-  renderGrid(currentSearchTerm());
-  renderQueue();
-  if(currentIndex > -1 && queue[currentIndex].id === track.id) syncLikeButtons();
-  if(currentView === 'library') renderLibraryViews();
-}
-function syncLikeButtons(){
-  const t = currentIndex > -1 ? queue[currentIndex] : null;
-  const liked = t ? isFavorite(t.id) : false;
-  document.getElementById('likeBtn').classList.toggle('liked', liked);
-  document.getElementById('sheetLikeBtn').classList.toggle('liked', liked);
-}
-
-function renderGrid(filter){
-  const targets = [
-    { grid: document.getElementById('grid'), heading: document.getElementById('gridHeading'), subtext: document.getElementById('gridSubtext'), empty: document.getElementById('noResults') },
-    { grid: document.getElementById('gridMobile'), heading: document.getElementById('gridHeadingMobile'), subtext: null, empty: document.getElementById('noResultsMobile') },
-  ];
-  let list;
-  if(liveResults !== null){
-    list = liveResults;
-    targets.forEach(t => t.heading && (t.heading.textContent = filter ? `Results for "${filter}"` : "Search results"));
-  } else {
-    list = filter ? TRACKS.filter(t => t.title.toLowerCase().includes(filter) || t.artist.toLowerCase().includes(filter)) : TRACKS;
-    targets.forEach(t => t.heading && (t.heading.textContent = "Quick picks"));
+  // waveform divider
+  const waveTrack = document.getElementById('waveTrack');
+  for(let i=0;i<80;i++){
+    const bar = document.createElement('span');
+    bar.style.height = (10 + Math.random()*34) + 'px';
+    waveTrack.appendChild(bar);
   }
-  targets.forEach(({grid, empty})=>{
-    if(!grid) return;
-    grid.innerHTML = '';
-    if(empty) empty.style.display = list.length === 0 ? 'block' : 'none';
-    list.forEach((t)=>{
-      const isCurrentTrack = currentIndex > -1 && queue[currentIndex] && queue[currentIndex].id === t.id;
-      const liked = isFavorite(t.id);
-      const card = document.createElement('div');
-      card.className = 'track-card' + (isCurrentTrack ? ' playing':'');
-      const showEq = isCurrentTrack && isPlaying;
-      const artInner = t.thumbnail ? `<img src="${t.thumbnail}" alt="" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">` : '';
-      card.innerHTML = `
-        <button class="card-fav-btn ${liked?'liked':''}" aria-label="Favorite">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="${liked?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 000-7.8z"/></svg>
-        </button>
-        <div class="art ${t.thumbnail ? '' : t.grad}">
-          ${artInner}
-          ${showEq ? `<div class="eq-mini"><span></span><span></span><span></span></div>` : `
-          <div class="playbtn"><div class="playbtn-circle">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-          </div></div>`}
-        </div>
-        <div class="t-title">${t.title}</div>
-        <div class="t-artist">${t.artist}</div>`;
-      card.querySelector('.card-fav-btn').onclick = (e)=>{ e.stopPropagation(); toggleFavorite(t); };
-      card.addEventListener('click', (e)=>{ if(!e.target.closest('.card-fav-btn')) playTrackById(t.id, list); });
-      grid.appendChild(card);
-    });
-  });
-}
 
-function renderQueue(){
-  const list = document.getElementById('queueList');
-  if(!list) return;
-  list.innerHTML = '';
-  if(queue.length === 0){ list.innerHTML = '<div class="empty-state">Queue is empty.</div>'; return; }
-  queue.forEach((t, i)=>{
-    const row = document.createElement('div');
-    row.className = 'row-item' + (i===currentIndex?' playing':'');
-    row.innerHTML = `
-      <div class="idx">${i===currentIndex && isPlaying ? '♪' : i+1}</div>
-      <div class="art-sm ${t.thumbnail ? '' : t.grad}" ${t.thumbnail ? `style="background-image:url('${t.thumbnail}');background-size:cover;background-position:center;"` : ''}></div>
-      <div class="info"><div class="t-title">${t.title}</div><div class="t-artist">${t.artist}</div></div>
-      <div class="dur">${t.duration ? fmt(t.duration) : '—'}</div>`;
-    row.addEventListener('click', ()=> playTrack(i));
-    list.appendChild(row);
-  });
-}
-
-function renderLyrics(hasTrack){
-  [ {list: document.getElementById('lyricsList'), empty: document.getElementById('lyricsEmpty')},
-    {list: document.getElementById('sheetLyricsList'), empty: document.getElementById('sheetLyricsEmpty')} ].forEach(({list, empty})=>{
-    if(!list) return;
-    list.innerHTML = '';
-    if(!hasTrack){
-      if(empty){ empty.textContent = currentIndex === -1 ? "Play a track to see lyrics here." : "No synced lyrics for this track yet."; empty.style.display = 'block'; }
-      return;
-    }
-    if(empty) empty.style.display = 'none';
-    DEMO_LYRICS.forEach((l)=>{
-      const div = document.createElement('div');
-      div.className = 'lyric-line'; div.dataset.t = l.t; div.textContent = l.line;
-      list.appendChild(div);
-    });
-  });
-}
-
-function playTrackById(id, sourceList){
-  const src = sourceList || (liveResults !== null ? liveResults : TRACKS);
-  const i = src.findIndex(t=>t.id===id);
-  if(i === -1) return;
-  queue = [...src];
-  playTrack(i);
-}
-
-function resolvePlaySrc(track){
-  if(track.src) return track.src;
-  if(!isApiConfigured()) return null;
-  return `${API_BASE}/api/proxy/${encodeURIComponent(track.id)}`;
-}
-
-const ICON_PLAY = '<path d="M8 5v14l11-7z"/>';
-const ICON_PAUSE = '<path d="M7 5h4v14H7zm6 0h4v14h-4z"/>';
-const ICON_LOADING = '<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="40" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite"/></circle>';
-
-function updateNowPlayingUI(t){
-  document.getElementById('npTitle').textContent = t.title;
-  document.getElementById('npArtist').textContent = t.artist;
-  document.getElementById('sheetTitle').textContent = t.title;
-  document.getElementById('sheetArtist').textContent = t.artist;
-  document.getElementById('miniTitle').textContent = t.title;
-  document.getElementById('miniArtist').textContent = t.artist;
-
-  const bg = t.thumbnail ? `background-image:url('${t.thumbnail}');` : '';
-  const cls = t.thumbnail ? '' : ' ' + t.grad;
-
-  const npArt = document.getElementById('npArt');
-  npArt.className = 'np-art art loading' + cls;
-  npArt.style.cssText = `width:56px;height:56px;border-radius:8px;${bg}`;
-
-  const sheetArt = document.getElementById('sheetArt');
-  sheetArt.className = 'sheet-art' + cls;
-  sheetArt.style.cssText = bg;
-
-  const miniArt = document.getElementById('miniArt');
-  miniArt.className = 'mini-art' + cls;
-  miniArt.style.cssText = bg;
-
-  document.getElementById('miniPlayer').style.display = 'flex';
-  syncLikeButtons();
-}
-
-function addToHistory(track){
-  state.history = state.history.filter(h => h.track.id !== track.id);
-  state.history.unshift({ track, playedAt: Date.now() });
-  if(state.history.length > 100) state.history.length = 100;
-  saveState();
-}
-
-async function playTrack(i){
-  if(i < 0 || i >= queue.length) return;
-  currentIndex = i;
-  const t = queue[i];
-  isLoading = true;
-  updatePlayIcon();
-
-  updateNowPlayingUI(t);
-  ['likeBtn','prevBtn','nextBtn','sheetPrevBtn','sheetNextBtn','seek','sheetSeek'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el) el.disabled = false;
-  });
-
-  const isDemoTrack = TRACKS.some(dt => dt.id === t.id);
-  renderLyrics(isDemoTrack);
-  renderGrid(currentSearchTerm());
-  renderQueue();
-  addToHistory(t);
-  if(currentView === 'library') renderLibraryViews();
-
-  const src = resolvePlaySrc(t);
-  if(!src){
-    isLoading = false; isPlaying = false; updatePlayIcon();
-    document.getElementById('npArt').classList.remove('loading');
-    showToast("No backend connected — set an API URL in Settings to play real tracks.");
-    return;
+  // cta band equalizer
+  const bandEq = document.getElementById('bandEq');
+  for(let i=0;i<50;i++){
+    const bar = document.createElement('span');
+    bar.style.animationDelay = (Math.random()*1.3) + 's';
+    bandEq.appendChild(bar);
   }
-  try {
-    audio.src = src;
-    await audio.play();
-    ensureEqualizerWired();
-  } catch (err) {
-    isLoading = false; isPlaying = false; updatePlayIcon();
-    document.getElementById('npArt').classList.remove('loading');
-    showToast("Couldn't play this track — " + (err.message || "check your connection and try again."));
-  }
-}
 
-function updatePlayIcon(){
-  const icon = isLoading ? ICON_LOADING : (isPlaying ? ICON_PAUSE : ICON_PLAY);
-  document.getElementById('playIcon').innerHTML = icon;
-  document.getElementById('sheetPlayIcon').innerHTML = icon;
-  document.getElementById('miniPlayIcon').innerHTML = icon;
-  document.getElementById('playBtn').disabled = isLoading;
-  document.getElementById('npArt').classList.toggle('loading', isLoading);
-}
+  // mobile menu
+  const menuToggle = document.getElementById('menuToggle');
+  const mobileMenu = document.getElementById('mobileMenu');
+  menuToggle.addEventListener('click', ()=> mobileMenu.classList.toggle('open'));
+  mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', ()=> mobileMenu.classList.remove('open')));
 
-function togglePlay(){
-  if(currentIndex === -1){ playTrack(0); return; }
-  if(audio.paused){ audio.play().catch(()=> showToast("Playback failed — try again.")); }
-  else { audio.pause(); isPlaying = false; }
-  updatePlayIcon();
-  renderQueue();
-}
-document.getElementById('playBtn').onclick = togglePlay;
-document.getElementById('sheetPlayBtn').onclick = togglePlay;
-document.getElementById('miniPlayBtn').onclick = (e)=>{ e.stopPropagation(); togglePlay(); };
-
-audio.addEventListener('playing', ()=>{ isLoading=false; isPlaying=true; updatePlayIcon(); renderGrid(currentSearchTerm()); renderQueue(); });
-audio.addEventListener('pause', ()=>{ if(!audio.ended){ isPlaying=false; updatePlayIcon(); renderGrid(currentSearchTerm()); renderQueue(); } });
-audio.addEventListener('waiting', ()=>{ isLoading=true; updatePlayIcon(); });
-audio.addEventListener('canplay', ()=>{ isLoading=false; updatePlayIcon(); });
-audio.addEventListener('error', ()=>{
-  isLoading = false; isPlaying = false; updatePlayIcon();
-  showToast("This track couldn't load. Skipping…");
-  setTimeout(goNext, 900);
-});
-
-function goNext(){ if(currentIndex === -1) return; let n = currentIndex+1; if(n >= queue.length) n = 0; playTrack(n); }
-function goPrev(){ if(currentIndex === -1) return; if(audio.currentTime > 3){ audio.currentTime = 0; return; } let p = currentIndex-1; if(p < 0) p = queue.length-1; playTrack(p); }
-document.getElementById('nextBtn').onclick = goNext; document.getElementById('prevBtn').onclick = goPrev;
-document.getElementById('sheetNextBtn').onclick = goNext; document.getElementById('sheetPrevBtn').onclick = goPrev;
-
-function toggleShuffle(){
-  shuffled = !shuffled;
-  ['shuffleBtn','sheetShuffleBtn'].forEach(id=> document.getElementById(id).classList.toggle('active-toggle', shuffled));
-  const currentTrack = currentIndex>-1 ? queue[currentIndex] : null;
-  queue = shuffled ? [...TRACKS].sort(()=>Math.random()-0.5) : [...TRACKS];
-  if(currentTrack) currentIndex = queue.findIndex(t=>t.id===currentTrack.id);
-  renderQueue();
-  showToast(shuffled ? "Shuffle on" : "Shuffle off");
-}
-function toggleRepeat(){
-  repeatMode = !repeatMode;
-  ['repeatBtn','sheetRepeatBtn'].forEach(id=> document.getElementById(id).classList.toggle('active-toggle', repeatMode));
-  audio.loop = repeatMode;
-  showToast(repeatMode ? "Repeat on" : "Repeat off");
-}
-document.getElementById('shuffleBtn').onclick = toggleShuffle; document.getElementById('sheetShuffleBtn').onclick = toggleShuffle;
-document.getElementById('repeatBtn').onclick = toggleRepeat; document.getElementById('sheetRepeatBtn').onclick = toggleRepeat;
-
-audio.addEventListener('timeupdate', ()=>{
-  if(!audio.duration) return;
-  const pct = (audio.currentTime/audio.duration)*100;
-  document.getElementById('seek').value = pct;
-  document.getElementById('sheetSeek').value = pct;
-  document.getElementById('miniSeekFill').style.width = pct + '%';
-  document.getElementById('curTime').textContent = fmt(audio.currentTime);
-  document.getElementById('durTime').textContent = fmt(audio.duration);
-  document.getElementById('sheetCurTime').textContent = fmt(audio.currentTime);
-  document.getElementById('sheetDurTime').textContent = fmt(audio.duration);
-
-  [document.getElementById('lyricsList'), document.getElementById('sheetLyricsList')].forEach(list=>{
-    const lines = list.children;
-    if(lines.length === 0) return;
-    const t = audio.currentTime % 90;
-    let activeIdx = 0;
-    for(let i=0;i<DEMO_LYRICS.length;i++){ if(t >= DEMO_LYRICS[i].t) activeIdx = i; }
-    [...lines].forEach((el,i)=> el.classList.toggle('active', i===activeIdx));
-    const activeEl = lines[activeIdx];
-    if(activeEl) activeEl.scrollIntoView({block:'center', behavior:'smooth'});
-  });
-});
-audio.addEventListener('ended', ()=>{ if(!repeatMode) goNext(); });
-
-function onSeekInput(e){ if(audio.duration) audio.currentTime = (e.target.value/100)*audio.duration; }
-document.getElementById('seek').addEventListener('input', onSeekInput);
-document.getElementById('sheetSeek').addEventListener('input', onSeekInput);
-document.getElementById('vol').addEventListener('input', (e)=>{ audio.volume = e.target.value/100; });
-audio.volume = 0.7;
-
-function toggleLike(){
-  if(currentIndex === -1) return;
-  toggleFavorite(queue[currentIndex]);
-}
-document.getElementById('likeBtn').onclick = toggleLike;
-document.getElementById('sheetLikeBtn').onclick = toggleLike;
-document.getElementById('sheetDownloadBtn').onclick = ()=> showToast("Download requires the Android or Desktop app — browsers can't store offline files like this.");
-document.getElementById('sheetAddToPlaylistBtn').onclick = ()=>{
-  if(currentIndex === -1){ showToast("Play something first."); return; }
-  openPlaylistModal(queue[currentIndex]);
-};
-
-function toggleLyricsPanel(){
-  document.getElementById('lyricsPanel').classList.toggle('open');
-  document.getElementById('lyricsToggle').classList.toggle('active');
-}
-document.getElementById('lyricsToggle').onclick = toggleLyricsPanel;
-document.getElementById('lyricsCloseMobile').onclick = toggleLyricsPanel;
-document.getElementById('sheetLyricsBtn').onclick = ()=>{
-  sheetShowingLyrics = !sheetShowingLyrics;
-  document.getElementById('sheetLyricsView').classList.toggle('open', sheetShowingLyrics);
-  document.getElementById('sheetLyricsBtn').classList.toggle('active-toggle', sheetShowingLyrics);
-};
-document.getElementById('sheetQueueBtn').onclick = ()=> showToast("Queue is visible on the Home tab, under 'Up next'.");
-document.getElementById('sheetTimerBtn').onclick = ()=> showToast("Sleep timer isn't implemented in the web player yet.");
-
-function openSheet(){ document.getElementById('npSheet').classList.add('open'); }
-function closeSheet(){ document.getElementById('npSheet').classList.remove('open'); }
-document.getElementById('miniInfoTap').addEventListener('click', ()=>{ if(currentIndex>-1) openSheet(); });
-document.getElementById('miniArt').addEventListener('click', ()=>{ if(currentIndex>-1) openSheet(); });
-document.getElementById('sheetClose').onclick = closeSheet;
-
-let sheetTouchStartY = null;
-const npSheetEl = document.getElementById('npSheet');
-npSheetEl.addEventListener('touchstart', (e)=>{ sheetTouchStartY = e.touches[0].clientY; }, {passive:true});
-npSheetEl.addEventListener('touchmove', (e)=>{
-  if(sheetTouchStartY === null) return;
-  if(e.touches[0].clientY - sheetTouchStartY > 80) closeSheet();
-}, {passive:true});
-
-function currentSearchTerm(){
-  const el = document.getElementById('searchInput'), elM = document.getElementById('searchInputMobile');
-  return ((el && el.value) || (elM && elM.value) || '').trim().toLowerCase();
-}
-let searchDebounce, searchRequestId = 0;
-async function runSearch(term){
-  const subtext = document.getElementById('gridSubtext');
-  if(!term){
-    liveResults = null;
-    if(subtext) subtext.textContent = isApiConfigured() ? "Search above to find real tracks." : "Demo playback — connect oli-web-api in Settings to search and stream real tracks.";
-    renderGrid(''); return;
-  }
-  if(!isApiConfigured()){ renderGrid(term.toLowerCase()); return; }
-  const reqId = ++searchRequestId;
-  if(subtext) subtext.textContent = "Searching…";
-  try {
-    const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(term)}`);
-    if(reqId !== searchRequestId) return;
-    if(!res.ok) throw new Error(`Search failed (${res.status})`);
-    const data = await res.json();
-    liveResults = (data.results || []).map(t => ({ id:t.id, title:t.title, artist:t.artist, thumbnail:t.thumbnail, duration:t.duration, grad:gradFor(t.id), src:null }));
-    if(subtext) subtext.textContent = `${liveResults.length} result${liveResults.length===1?'':'s'} for "${term}"`;
-    renderGrid(term);
-  } catch (err) {
-    if(reqId !== searchRequestId) return;
-    liveResults = [];
-    if(subtext) subtext.textContent = "Search failed — is oli-web-api reachable?";
-    renderGrid(term);
-    showToast("Couldn't reach the search backend.");
-  }
-}
-[document.getElementById('searchInput'), document.getElementById('searchInputMobile')].forEach(input=>{
-  if(!input) return;
-  input.addEventListener('input', (e)=>{
-    clearTimeout(searchDebounce);
-    const term = e.target.value.trim();
-    searchDebounce = setTimeout(()=> runSearch(term), 300);
-  });
-  input.addEventListener('focus', ()=> showView('home'));
-});
-document.getElementById('searchNavItem')?.addEventListener('click', ()=> document.getElementById('searchInput').focus());
-document.getElementById('bnSearch')?.addEventListener('click', ()=> { showView('home'); document.getElementById('searchInputMobile').focus(); });
-
-let libTab = 'playlists';
-let openPlaylistId = null;
-
-function renderSidebarPlaylists(){
-  const el = document.getElementById('sidebarPlaylists');
-  el.innerHTML = '';
-  if(state.playlists.length === 0){
-    el.innerHTML = '<div class="playlist-item" style="opacity:.6;">No playlists yet</div>';
-    return;
-  }
-  state.playlists.forEach(p=>{
-    const item = document.createElement('div');
-    item.className = 'playlist-item'; item.textContent = p.name;
-    item.onclick = ()=>{ showView('library'); libTab = 'playlists'; openPlaylistId = p.id; renderLibraryViews(); };
-    el.appendChild(item);
-  });
-}
-
-function libraryTabsHtml(){
-  return `
-    <div class="tab-btn ${libTab==='playlists'?'active':''}" data-tab="playlists">Playlists</div>
-    <div class="tab-btn ${libTab==='favorites'?'active':''}" data-tab="favorites">Favorites</div>
-    <div class="tab-btn ${libTab==='history'?'active':''}" data-tab="history">History</div>`;
-}
-function trackRowHtml(t, idx, extra){
-  return `
-    <div class="idx">${idx}</div>
-    <div class="art-sm ${t.thumbnail ? '' : t.grad}" ${t.thumbnail ? `style="background-image:url('${t.thumbnail}');background-size:cover;background-position:center;"` : ''}></div>
-    <div class="info"><div class="t-title">${t.title}</div><div class="t-artist">${t.artist}${extra?` &middot; ${extra}`:''}</div></div>
-    <div class="row-actions">
-      <button class="fav-toggle ${isFavorite(t.id)?'liked':''}" aria-label="Favorite">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="${isFavorite(t.id)?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 000-7.8z"/></svg>
-      </button>
-    </div>`;
-}
-function renderLibraryContent(container){
-  container.innerHTML = '';
-  if(libTab === 'playlists'){
-    if(openPlaylistId){
-      const pl = state.playlists.find(p=>p.id===openPlaylistId);
-      if(!pl){ openPlaylistId = null; renderLibraryContent(container); return; }
-      const backRow = document.createElement('div');
-      backRow.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:16px;cursor:pointer;color:var(--muted);';
-      backRow.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg><span>All playlists</span>`;
-      backRow.onclick = ()=>{ openPlaylistId = null; renderLibraryViews(); };
-      container.appendChild(backRow);
-
-      const header = document.createElement('div');
-      header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;';
-      header.innerHTML = `<div><div style="font-family:'Fraunces',serif;font-size:19px;font-weight:600;">${pl.name}</div><div style="color:var(--muted);font-size:12.5px;">${pl.tracks.length} track${pl.tracks.length===1?'':'s'}</div></div>
-        <button class="btn btn-danger" data-del-playlist>Delete playlist</button>`;
-      container.appendChild(header);
-      header.querySelector('[data-del-playlist]').onclick = ()=>{
-        state.playlists = state.playlists.filter(p=>p.id!==pl.id);
-        saveState(); openPlaylistId = null; renderSidebarPlaylists(); renderLibraryViews();
-        showToast("Playlist deleted");
-      };
-
-      const list = document.createElement('div'); list.className = 'row-list';
-      if(pl.tracks.length === 0){ list.innerHTML = '<div class="empty-state">No tracks in this playlist yet. Add some from Now Playing.</div>'; }
-      pl.tracks.forEach((t,i)=>{
-        const row = document.createElement('div'); row.className = 'row-item';
-        row.innerHTML = trackRowHtml(t, i+1);
-        row.addEventListener('click', (e)=>{ if(!e.target.closest('.fav-toggle')) playTrackById(t.id, pl.tracks); });
-        row.querySelector('.fav-toggle').onclick = (e)=>{ e.stopPropagation(); toggleFavorite(t); };
-        list.appendChild(row);
-      });
-      container.appendChild(list);
-      return;
-    }
-    const grid = document.createElement('div'); grid.className = 'playlist-grid';
-    const newCard = document.createElement('div'); newCard.className = 'new-playlist-card';
-    newCard.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg><span>New playlist</span>`;
-    newCard.onclick = ()=> promptNewPlaylist();
-    grid.appendChild(newCard);
-    state.playlists.forEach(p=>{
-      const card = document.createElement('div'); card.className = 'playlist-card';
-      const covers = p.tracks.slice(0,4);
-      const coverHtml = covers.length
-        ? covers.map(t=> t.thumbnail ? `<div style="background-image:url('${t.thumbnail}')"></div>` : `<div class="${t.grad}"></div>`).join('')
-        : '<div class="gradient-1"></div><div class="gradient-2"></div><div class="gradient-3"></div><div class="gradient-4"></div>';
-      card.innerHTML = `<div class="playlist-cover">${coverHtml}</div><div class="playlist-name">${p.name}</div><div class="playlist-count">${p.tracks.length} track${p.tracks.length===1?'':'s'}</div>`;
-      card.onclick = ()=>{ openPlaylistId = p.id; renderLibraryViews(); };
-      grid.appendChild(card);
-    });
-    container.appendChild(grid);
-  }
-  else if(libTab === 'favorites'){
-    if(state.favorites.length === 0){ container.innerHTML = '<div class="empty-state">No favorites yet — tap the heart on any track.</div>'; return; }
-    const list = document.createElement('div'); list.className = 'row-list';
-    state.favorites.forEach((t,i)=>{
-      const row = document.createElement('div'); row.className = 'row-item';
-      row.innerHTML = trackRowHtml(t, i+1);
-      row.addEventListener('click', (e)=>{ if(!e.target.closest('.fav-toggle')) playTrackById(t.id, state.favorites); });
-      row.querySelector('.fav-toggle').onclick = (e)=>{ e.stopPropagation(); toggleFavorite(t); };
-      list.appendChild(row);
-    });
-    container.appendChild(list);
-  }
-  else if(libTab === 'history'){
-    if(state.history.length === 0){ container.innerHTML = '<div class="empty-state">Nothing played yet.</div>'; return; }
-    const clearBtn = document.createElement('button');
-    clearBtn.className = 'btn btn-ghost'; clearBtn.style.marginBottom = '16px'; clearBtn.textContent = 'Clear history';
-    clearBtn.onclick = ()=>{ state.history = []; saveState(); renderLibraryViews(); showToast("History cleared"); };
-    container.appendChild(clearBtn);
-    const list = document.createElement('div'); list.className = 'row-list';
-    state.history.forEach((h,i)=>{
-      const when = new Date(h.playedAt).toLocaleString(undefined, {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
-      const row = document.createElement('div'); row.className = 'row-item';
-      row.innerHTML = trackRowHtml(h.track, i+1, when);
-      row.addEventListener('click', (e)=>{ if(!e.target.closest('.fav-toggle')) playTrackById(h.track.id, state.history.map(x=>x.track)); });
-      row.querySelector('.fav-toggle').onclick = (e)=>{ e.stopPropagation(); toggleFavorite(h.track); };
-      list.appendChild(row);
-    });
-    container.appendChild(list);
-  }
-}
-function renderLibraryViews(){
-  [document.getElementById('libTabsDesktop'), document.getElementById('libTabsMobile')].forEach(tabs=>{
-    if(!tabs) return;
-    tabs.innerHTML = libraryTabsHtml();
-    tabs.querySelectorAll('[data-tab]').forEach(btn=>{
-      btn.onclick = ()=>{ libTab = btn.dataset.tab; openPlaylistId = null; renderLibraryViews(); };
+  // faq accordion
+  document.querySelectorAll('.faq-item').forEach(item=>{
+    item.querySelector('.faq-q').addEventListener('click', ()=>{
+      const wasOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
+      if(!wasOpen) item.classList.add('open');
     });
   });
-  [document.getElementById('libraryContentDesktop'), document.getElementById('libraryContentMobile')].forEach(c=>{
-    if(c) renderLibraryContent(c);
-  });
-}
-function promptNewPlaylist(){
-  const name = prompt("Playlist name?");
-  if(!name || !name.trim()) return;
-  const pl = { id: uid(), name: name.trim(), createdAt: Date.now(), tracks: [] };
-  state.playlists.push(pl);
-  saveState();
-  renderSidebarPlaylists();
-  renderLibraryViews();
-  showToast(`Created "${pl.name}"`);
-}
-document.getElementById('newPlaylistBtnSidebar').onclick = (e)=>{ e.stopPropagation(); promptNewPlaylist(); };
 
-const playlistModal = document.getElementById('playlistModal');
-function openPlaylistModal(track){
-  pendingPlaylistTrack = track;
-  const list = document.getElementById('modalPlaylistList');
-  list.innerHTML = '';
-  if(state.playlists.length === 0){
-    list.innerHTML = '<div style="color:var(--muted);font-size:13.5px;">No playlists yet — create one below.</div>';
-  }
-  state.playlists.forEach(p=>{
-    const already = p.tracks.some(t=>t.id===track.id);
-    const item = document.createElement('div');
-    item.className = 'modal-playlist-item';
-    item.innerHTML = `<span>${already ? '✓' : '+'}</span><span>${p.name}</span>`;
-    item.onclick = ()=>{
-      if(already) p.tracks = p.tracks.filter(t=>t.id!==track.id);
-      else p.tracks.push(track);
-      saveState();
-      showToast(already ? `Removed from ${p.name}` : `Added to ${p.name}`);
-      closePlaylistModal();
-    };
-    list.appendChild(item);
-  });
-  document.getElementById('newPlaylistNameInput').value = '';
-  playlistModal.classList.add('open');
-}
-function closePlaylistModal(){ playlistModal.classList.remove('open'); pendingPlaylistTrack = null; }
-document.getElementById('modalCancelBtn').onclick = closePlaylistModal;
-document.getElementById('modalCreateBtn').onclick = ()=>{
-  const name = document.getElementById('newPlaylistNameInput').value.trim();
-  if(!name){ showToast("Enter a playlist name first."); return; }
-  const pl = { id: uid(), name, createdAt: Date.now(), tracks: pendingPlaylistTrack ? [pendingPlaylistTrack] : [] };
-  state.playlists.push(pl);
-  saveState();
-  renderSidebarPlaylists();
-  showToast(`Created "${name}"` + (pendingPlaylistTrack ? ' and added track' : ''));
-  closePlaylistModal();
-};
-playlistModal.addEventListener('click', (e)=>{ if(e.target === playlistModal) closePlaylistModal(); });
-
-let audioCtx = null, sourceNode = null, filterNodes = [];
-function ensureEqualizerWired(){
-  if(audioCtx) return;
-  try {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    sourceNode = audioCtx.createMediaElementSource(audio);
-    filterNodes = EQ_BANDS.map((band, i) => {
-      const f = audioCtx.createBiquadFilter();
-      f.type = band.type; f.frequency.value = band.freq;
-      f.gain.value = state.eqEnabled ? state.eqGains[i] : 0;
-      return f;
-    });
-    let node = sourceNode;
-    filterNodes.forEach(f => { node.connect(f); node = f; });
-    node.connect(audioCtx.destination);
-  } catch(e) {
-    console.error("Web Audio API setup failed:", e);
-  }
-}
-function applyEqGains(){
-  if(!filterNodes.length) return;
-  filterNodes.forEach((f,i)=>{ f.gain.value = state.eqEnabled ? state.eqGains[i] : 0; });
-}
-function eqPanelHtml(){
-  return `
-    <div class="form-row" style="border:none;padding-bottom:20px;">
-      <div><div class="label">Enable equalizer</div><div class="desc">Applies live to whatever's currently playing.</div></div>
-      <div class="toggle ${state.eqEnabled?'on':''}" id="eqEnableToggle"></div>
-    </div>
-    <div class="eq-bands">
-      ${EQ_BANDS.map((b,i)=>`
-        <div class="eq-band">
-          <div class="gain-label" id="eqGainLabel-${i}">${state.eqGains[i]>0?'+':''}${state.eqGains[i]}dB</div>
-          <input type="range" min="-12" max="12" value="${state.eqGains[i]}" data-band="${i}">
-          <div class="freq-label">${b.freq>=1000 ? (b.freq/1000)+'k' : b.freq}Hz</div>
-        </div>`).join('')}
-    </div>
-    <div class="eq-presets">
-      <button class="btn btn-ghost" data-preset="flat">Flat</button>
-      <button class="btn btn-ghost" data-preset="bass">Bass Boost</button>
-      <button class="btn btn-ghost" data-preset="vocal">Vocal Boost</button>
-      <button class="btn btn-ghost" data-preset="treble">Treble Boost</button>
-    </div>
-    <div class="lt-note">Equalizer uses the Web Audio API directly in your browser — it's applied to this tab's playback only and won't affect the Android or Desktop apps.</div>
-  `;
-}
-const EQ_PRESETS = { flat:[0,0,0,0,0], bass:[8,5,0,-2,-3], vocal:[-3,-1,4,4,-1], treble:[-3,-2,0,4,7] };
-function renderEqualizerViews(){
-  [document.getElementById('eqPanelDesktop'), document.getElementById('eqPanelMobile')].forEach(panel=>{
-    if(!panel) return;
-    panel.innerHTML = eqPanelHtml();
-    panel.querySelector('#eqEnableToggle').onclick = ()=>{
-      state.eqEnabled = !state.eqEnabled; saveState(); applyEqGains(); renderEqualizerViews();
-    };
-    panel.querySelectorAll('input[type="range"]').forEach(slider=>{
-      slider.addEventListener('input', (e)=>{
-        const i = Number(e.target.dataset.band);
-        state.eqGains[i] = Number(e.target.value);
-        saveState(); applyEqGains();
-        const label = panel.querySelector(`#eqGainLabel-${i}`);
-        if(label) label.textContent = (state.eqGains[i]>0?'+':'') + state.eqGains[i] + 'dB';
-      });
-    });
-    panel.querySelectorAll('[data-preset]').forEach(btn=>{
-      btn.onclick = ()=>{
-        state.eqGains = [...EQ_PRESETS[btn.dataset.preset]];
-        state.eqEnabled = true;
-        saveState(); applyEqGains(); renderEqualizerViews();
-        showToast(`Applied "${btn.textContent}" preset`);
-      };
-    });
-  });
-}
-
-let ltSocket = null;
-let ltStatus = 'disconnected';
-let ltErrorMsg = '';
-function listenPanelHtml(){
-  const statusText = { disconnected:"Not connected", connecting:"Connecting…", connected:"Connected", error:"Connection failed" }[ltStatus];
-  return `
-    <div class="lt-status ${ltStatus}"><div class="lt-dot"></div><div>${statusText}${ltStatus==='error' && ltErrorMsg ? ' — ' + ltErrorMsg : ''}</div></div>
-    <div class="form-row"><div style="flex:1;"><div class="label">Server URL</div><div class="desc">Your deployed oli-server WebSocket endpoint.</div></div></div>
-    <input type="text" id="ltServerInput" value="${state.listenServerUrl}" style="width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;color:var(--ink);font-size:13.5px;outline:none;margin:8px 0 20px;">
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
-      <button class="btn" id="ltConnectBtn">${ltStatus==='connected' ? 'Disconnect' : 'Connect'}</button>
-    </div>
-    <div class="lt-note">
-      <strong style="color:var(--ink);">Experimental.</strong> This opens a real WebSocket connection to your <code>oli-server</code> deployment to confirm it's reachable. Full session sync (matching the Android app's exact message protocol, which uses Protocol Buffers) hasn't been verified end-to-end from this environment — treat playback sync here as best-effort, not guaranteed compatible yet.
-    </div>
-  `;
-}
-function renderListenTogetherViews(){
-  [document.getElementById('listenPanelDesktop'), document.getElementById('listenPanelMobile')].forEach(panel=>{
-    if(!panel) return;
-    panel.innerHTML = listenPanelHtml();
-    panel.querySelector('#ltServerInput').addEventListener('change', (e)=>{ state.listenServerUrl = e.target.value.trim(); saveState(); });
-    panel.querySelector('#ltConnectBtn').onclick = ()=>{ ltStatus === 'connected' ? ltDisconnect() : ltConnect(); };
-  });
-}
-function ltSetStatus(s, err){ ltStatus = s; ltErrorMsg = err || ''; renderListenTogetherViews(); }
-function ltConnect(){
-  const url = state.listenServerUrl.trim();
-  if(!url){ showToast("Enter a server URL first."); return; }
-  ltSetStatus('connecting');
-  try {
-    ltSocket = new WebSocket(url);
-    ltSocket.onopen = ()=>{ ltSetStatus('connected'); showToast("Connected to Listen Together server"); };
-    ltSocket.onerror = ()=>{ ltSetStatus('error', 'could not reach server'); };
-    ltSocket.onclose = ()=>{ if(ltStatus !== 'error') ltSetStatus('disconnected'); };
-  } catch(e){ ltSetStatus('error', e.message); }
-}
-function ltDisconnect(){ if(ltSocket){ ltSocket.close(); ltSocket = null; } ltSetStatus('disconnected'); }
-
-function settingsPanelHtml(){
-  return `
-    <div class="form-row"><div><div class="label">Backend API URL</div><div class="desc">Your deployed oli-web-api URL. Leave blank to stay in demo mode.</div></div></div>
-    <input type="text" id="apiBaseInput" placeholder="https://your-oli-web-api.example.com" value="${state.apiBase}" style="width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;color:var(--ink);font-size:13.5px;outline:none;margin:8px 0 20px;">
-    <div class="form-row">
-      <div><div class="label">Accent color</div><div class="desc">Changes the highlight color throughout the app.</div></div>
-      <div class="swatches" id="accentSwatches">
-        ${Object.entries(ACCENTS).map(([name,hex])=>`<div class="swatch ${state.accent===name?'active':''}" data-accent="${name}" style="background:${hex};"></div>`).join('')}
-      </div>
-    </div>
-    <div class="form-row">
-      <div><div class="label">Playback quality</div><div class="desc">Higher quality uses more data. Not yet wired to a real quality selector on the backend.</div></div>
-      <select id="qualitySelect"><option>Auto</option><option>High</option><option>Low</option></select>
-    </div>
-    <div class="form-row">
-      <div><div class="label">Clear library data</div><div class="desc">Removes all playlists, favorites, and history from this browser. Can't be undone.</div></div>
-      <button class="btn btn-danger" id="clearDataBtn">Clear</button>
-    </div>
-    <div class="form-row">
-      <div><div class="label">About</div><div class="desc">Oli is a rebranded fork of Echo Music by Aditya Yadav, GPL-3.0 licensed.</div></div>
-      <a href="info.html" class="btn btn-ghost">About Oli</a>
-    </div>
-  `;
-}
-function renderSettingsViews(){
-  [document.getElementById('settingsPanelDesktop'), document.getElementById('settingsPanelMobile')].forEach(panel=>{
-    if(!panel) return;
-    panel.innerHTML = settingsPanelHtml();
-    panel.querySelector('#apiBaseInput').addEventListener('change', (e)=>{
-      state.apiBase = e.target.value.trim();
-      API_BASE = state.apiBase;
-      saveState();
-      showToast(API_BASE ? "Backend connected" : "Switched to demo mode");
-      liveResults = null;
-      renderGrid(currentSearchTerm());
-    });
-    panel.querySelectorAll('[data-accent]').forEach(sw=>{
-      sw.onclick = ()=>{ state.accent = sw.dataset.accent; saveState(); applyAccent(); renderSettingsViews(); };
-    });
-    panel.querySelector('#clearDataBtn').onclick = ()=>{
-      if(!confirm("Clear all playlists, favorites, and history? This can't be undone.")) return;
-      state.playlists = []; state.favorites = []; state.history = [];
-      saveState(); renderSidebarPlaylists(); renderLibraryViews(); renderGrid(currentSearchTerm());
-      showToast("Library data cleared");
-    };
-  });
-}
-function applyAccent(){ document.documentElement.style.setProperty('--amber', ACCENTS[state.accent] || ACCENTS.amber); }
-
-applyAccent();
-renderStaticSections();
-renderSidebarPlaylists();
-renderGrid();
-renderQueue();
-renderLyrics(false);
-showView('home');
-
-document.addEventListener('keydown', (e)=>{
-  if(e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
-  if(e.code === 'Space'){ e.preventDefault(); togglePlay(); }
-  if(e.code === 'ArrowRight' && e.shiftKey){ goNext(); }
-  if(e.code === 'ArrowLeft' && e.shiftKey){ goPrev(); }
-  if(e.key === 'l' || e.key === 'L'){ toggleLyricsPanel(); }
-});
+  // lyric mock swap
+  const lyricLines = document.querySelectorAll('.mock-lyrics .line');
+  let activeIdx = 1;
+  setInterval(()=>{
+    lyricLines.forEach(l=>l.classList.remove('active'));
+    activeIdx = (activeIdx+1) % lyricLines.length;
+    lyricLines[activeIdx].classList.add('active');
+  }, 2600);
 </script>
 </body>
 </html>
